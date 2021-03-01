@@ -448,12 +448,15 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
 
   // White pawn on a7 and rook on a8 is a draw if black's king is on g7 or h7
   // and the black rook is behind the pawn.
-  // Could also add in the specific case of ...Ra6 and Kc5 being a draw, whoever's turn it is.
+  // Also look into dealing with cases where there's Kc5 and ...Ra4-...Ra6.
   if (   strongPawn == SQ_A7
       && strongRook == SQ_A8
       && (weakKing == SQ_H7 || weakKing == SQ_G7)
       && file_of(weakRook) == FILE_A
-      && (rank_of(weakRook) <= RANK_3 || file_of(strongKing) >= FILE_D || rank_of(strongKing) < RANK_5))
+      && strongKing != SQ_B7
+      && strongKing != SQ_B6
+      && (distance(strongKing, weakRook) > 1)
+      && (rank_of(weakRook) <= RANK_3 || file_of(strongKing) >= FILE_D || rank_of(strongKing) <= RANK_5))
       return SCALE_FACTOR_DRAW;
 
   // If the defending king blocks the pawn and the attacking king is too far
