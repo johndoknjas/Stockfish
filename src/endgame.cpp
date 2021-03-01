@@ -453,7 +453,7 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
       && (weakKing == SQ_H7 || weakKing == SQ_G7)
       && file_of(weakRook) == FILE_A
       && (rank_of(weakRook) <= RANK_3 || file_of(strongKing) >= FILE_D || rank_of(strongKing) <= RANK_5))
-      return SCALE_FACTOR_DRAW;
+      return ScaleFactor(SCALE_FACTOR_MAX);
 
   // If the defending king blocks the pawn and the attacking king is too far
   // away, it's a draw.
