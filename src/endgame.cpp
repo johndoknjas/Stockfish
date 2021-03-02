@@ -518,15 +518,7 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
               && (!tempo || file_of(weakRook) >= FILE_F))
           || (   file_of(strongKing) <= FILE_C
               && abs(file_of(weakRook) - file_of(strongKing)) >= 3
-              && (!tempo || rank_of(weakRook) == rank_of(strongKing))))
-      && (   abs(rank_of(strongRook) - rank_of(weakKing)) <= 1
-          || (   abs(rank_of(strongRook) - rank_of(weakKing)) == 2
-              && (   abs(rank_of(strongKing) - rank_of(strongRook) >= 2)
-                  || abs(file_of(strongKing) - file_of(weakKing) >= 2)))
-          || (   rank_of(strongKing) == rank_of(strongRook)
-              && file_of(strongKing) <= file_of(weakKing)
-              && distance(strongKing, weakRook) > 2
-              && distance(strongKing, strongPawn) > 2)))
+              && (!tempo || rank_of(weakRook) == rank_of(strongKing)))))
       return SCALE_FACTOR_DRAW;
 
   return SCALE_FACTOR_NONE;
