@@ -497,6 +497,38 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
           && distance(strongKing, weakKing) > 2)
           return ScaleFactor(24 - 2 * distance(strongKing, weakKing));
   }
+
+  // In the Vancura defense, Black can draw by defending with the rook on the side.
+  // Check if it is the case when White's a-pawn is somewhere between a4-a6.
+  if (   file_of(strongPawn) == FILE_A
+      && file_of(strongRook) == file_of(strongPawn)
+      && rank_of(strongRook) > rank_of(strongPawn)
+      && (   rank_of(weakRook) == rank_of(strongPawn)
+          || (   rank_of(weakRook) == rank_of(strongKing)
+              && file_of(weakRook) - file_of(strongKing) >= 3))
+      && file_of(weakRook) < file_of(weakKing)
+      && pawnRank <= RANK_6
+      && pawnRank >= RANK_4
+      && file_of(weakKing) >= FILE_G
+      && rank_of(weakKing) >= RANK_6
+      && (rank_of(strongRook) - rank_of(weakKing) <= 1)
+      && (!tempo || distance(strongKing, weakRook) > 1)
+      && (   file_of(strongKing) >= FILE_E
+          || (   file_of(strongKing) == FILE_D
+              && (!tempo || file_of(weakRook) >= FILE_F))
+          || (   file_of(strongKing) <= FILE_C
+              && abs(file_of(weakRook) - file_of(strongKing)) >= 3
+              && (!tempo || rank_of(weakRook) == rank_of(strongKing))))
+      && (   abs(rank_of(strongRook) - rank_of(weakKing)) <= 1
+          || (   abs(rank_of(strongRook) - rank_of(weakKing)) == 2
+              && (   abs(rank_of(strongKing) - rank_of(strongRook) >= 2)
+                  || abs(file_of(strongKing) - file_of(weakKing) >= 2)))
+          || (   rank_of(strongKing) == rank_of(strongRook)
+              && file_of(strongKing) <= file_of(weakKing)
+              && distance(strongKing, weakRook) > 2
+              && distance(strongKing, strongPawn) > 2)))
+      return SCALE_FACTOR_DRAW;
+
   return SCALE_FACTOR_NONE;
 }
 
