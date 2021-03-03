@@ -428,8 +428,7 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
   // queening square, use the third-rank defence.
   if (   pawnRank <= RANK_5
       && distance(weakKing, queeningSquare) <= 1
-      && strongKing <= SQ_H5
-      && (rank_of(weakRook) == RANK_6 || (pawnRank <= RANK_3 && rank_of(strongRook) != RANK_6)))
+      && strongKing <= SQ_H5)
       return SCALE_FACTOR_DRAW;
 
   // The defending side saves a draw by checking from behind in case the pawn
