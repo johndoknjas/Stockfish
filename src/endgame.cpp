@@ -499,31 +499,23 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
   }
 
   // Check if this is a Vancura defense, where black manages to draw by defending
-  // with the rook on the side against white's a-pawn.
-  if (   file_of(strongPawn) == FILE_A
-      && file_of(strongRook) == file_of(strongPawn)
-      && rank_of(strongRook) > rank_of(strongPawn)
+  // with the rook on the side against white's a6-pawn.
+  if (   strongPawn == SQ_A6
+      && (strongRook == SQ_A7 || strongRook == SQ_A8)
+      && rank_of(weakKing) >= RANK_6
+      && file_of(weakKing) >= FILE_G
+      && abs(rank_of(strongRook) - rank_of(weakKing)) <= 1
       && (   rank_of(weakRook) == rank_of(strongPawn)
           || (   rank_of(weakRook) == rank_of(strongKing)
-              && file_of(weakRook) - file_of(strongKing) >= 3))
+              && abs(file_of(weakRook) - file_of(strongKing)) >= 3))
       && file_of(weakRook) < file_of(weakKing)
-      && pawnRank <= RANK_6
-      && (   pawnRank < RANK_4
-          || rank_of(strongRook) == RANK_7
-          || distance(strongKing, SQ_G7) == 1
-          || weakKing == SQ_G7)
-      && (   distance(strongKing, SQ_G7) > 1
-          || file_of(weakRook) == FILE_C
-          || file_of(weakRook) == FILE_D)
-      && (file_of(weakKing) == FILE_G || rank_of(strongRook) == RANK_8)
-      && rank_of(weakKing) >= RANK_6
-      && (rank_of(strongRook) - rank_of(weakKing) <= 1)
-      && (!tempo || distance(strongKing, weakRook) > 1)
-      && (   file_of(strongKing) >= FILE_E
-          || (   file_of(strongKing) == FILE_D
-              && (!tempo || file_of(weakRook) >= FILE_F))
-          || (   file_of(strongKing) <= FILE_C
-              && abs(file_of(weakRook) - file_of(strongKing)) >= 3
+      && (distance(strongKing, weakKing + NORTH * (rank_of(strongRook) - rank_of(weakKing))) > 1)
+      && (   rank_of(strongKing) <= RANK_3
+          || file_of(strongKing) >= FILE_D
+          || (   file_of(strongKing) == FILE_C
+              && (!tempo || file_of(weakRook) >= FILE_E))
+          || (   file_of(strongKing) <= FILE_B
+              && file_of(weakRook) >= FILE_E
               && (!tempo || rank_of(weakRook) == rank_of(strongKing)))))
       return SCALE_FACTOR_DRAW;
 
