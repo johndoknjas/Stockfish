@@ -509,6 +509,8 @@ ScaleFactor Endgame<KRPKR>::operator()(const Position& pos) const {
           || (   rank_of(weakRook) == rank_of(strongKing)
               && abs(file_of(weakRook) - file_of(strongKing)) >= 3))
       && file_of(weakRook) < file_of(weakKing)
+      && (   distance(strongKing, weakRook) > 1 
+          || (!tempo && rank_of(strongRook) != rank_of(weakKing)))
       && (distance(strongKing, weakKing + NORTH * (rank_of(strongRook) - rank_of(weakKing))) > 1)
       && (   rank_of(strongKing) <= RANK_3
           || file_of(strongKing) >= FILE_D
