@@ -1087,7 +1087,7 @@ Value Eval::evaluate(const Position& pos) {
   // but we switch to NNUE during long shuffling or with high material on the board.
   int depth_bound = 9;
   int pieces_bound = 7;
-  TUNE(depth_bound, pieces_bound);
+  TUNE(SetRange(4, 14), depth_bound, SetRange(5, 9), pieces_bound); 
   bool useClassical = (pos.this_thread()->depth > depth_bound || pos.count<ALL_PIECES>() > pieces_bound) &&
           abs(eg_value(pos.psq_score())) * 5 > (856 + pos.non_pawn_material() / 64) * (10 + pos.rule50_count());
 
