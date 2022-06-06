@@ -1090,7 +1090,36 @@ Value Eval::evaluate(const Position& pos) {
   //int pieces_bound = 7;
   // TUNE(SetRange(4, 14), depth_bound, SetRange(5, 9), pieces_bound);
 
-  bool useClassical = (pos.this_thread()->depth > 15 || pos.count<ALL_PIECES>() > 7) &&
+  if (!useNNUE)
+  {
+      v = Evaluation<NO_TRACE>(pos).value();          // classical
+  }
+  else if ((pos.this_thread()->depth > 9 || pos.count<ALL_PIECES>() > 7) &&
+          abs(eg_value(pos.psq_score())) * 5 > (856 + pos.non_pawn_material() / 64) * (10 + pos.rule50_count()))
+  {
+      v = Evaluation<NO_TRACE>(pos).value();          // classical
+      if (abs(v) < 297)
+      {
+          // If result of a classical evaluation is much lower than threshold fall back to NNUE:
+          int complexity;
+          int scale      = 1048 + 109 * pos.non_pawn_material() / 5120;
+          Color stm      = pos.side_to_move();
+          Value optimism = pos.this_thread()->optimism[stm];
+          Value psq      = (stm == WHITE ? 1 : -1) * eg_value(pos.psq_score());
+          Value nnue     = NNUE::evaluate(pos, true, &complexity);     // NNUE
+
+          complexity = (137 * complexity + 137 * abs(nnue - psq)) / 256;
+          optimism = optimism * (255 + complexity) / 256;
+          v = (nnue * scale + optimism * (scale - 848)) / 1024;
+
+          if (pos.is_chess960())
+              v += fix_FRC(pos);
+      }
+  }
+
+
+/*
+  bool useClassical = (pos.this_thread()->depth > 9 || pos.count<ALL_PIECES>() > 7) &&
           abs(eg_value(pos.psq_score())) * 5 > (856 + pos.non_pawn_material() / 64) * (10 + pos.rule50_count());
 
   // Deciding between classical and NNUE eval (~10 Elo): for high PSQ imbalance we use classical,
@@ -1118,6 +1147,8 @@ Value Eval::evaluate(const Position& pos) {
        if (pos.is_chess960())
            v += fix_FRC(pos);
   }
+
+  */
 
   // Damp down the evaluation linearly when shuffling
   v = v * (195 - pos.rule50_count()) / 211;
