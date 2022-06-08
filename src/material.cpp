@@ -28,7 +28,7 @@ namespace Stockfish {
 
 int tune_1 = -210;
 int tune_2 = -211;
-TUNE(SetRange(-170, -250), tune_1, SetRange(-170, -250), tune_2);
+TUNE(SetRange(-250, -170), tune_1, SetRange(-250, -170), tune_2);
 
 namespace {
   #define S(mg, eg) make_score(mg, eg)
