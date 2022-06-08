@@ -26,13 +26,17 @@ using namespace std;
 
 namespace Stockfish {
 
+int tune_1 = -210;
+int tune_2 = -211;
+TUNE(tune_1, tune_2);
+
 namespace {
   #define S(mg, eg) make_score(mg, eg)
 
   // Polynomial material imbalance parameters
 
   // One Score parameter for each pair (our piece, another of our pieces)
-  constexpr Score QuadraticOurs[][PIECE_TYPE_NB] = {
+  Score QuadraticOurs[][PIECE_TYPE_NB] = {
     // OUR PIECE 2
     // bishop pair    pawn         knight       bishop       rook           queen
     {S(1419, 1455)                                                                  }, // Bishop pair
@@ -40,7 +44,7 @@ namespace {
     {S(  57,   64), S(249, 187), S(-49, -62)                                        }, // Knight      OUR PIECE 1
     {S(   0,    0), S(118, 137), S( 10,  27), S(  0,   0)                           }, // Bishop
     {S( -63,  -68), S( -5,   3), S(100,  81), S(132, 118), S(-246, -244)            }, // Rook
-    {S(-210, -211), S( 37,  14), S(147, 141), S(161, 105), S(-158, -174), S(-9,-31) }  // Queen
+    {S(tune_1, tune_2), S( 37,  14), S(147, 141), S(161, 105), S(-158, -174), S(-9,-31) }  // Queen
   };
 
   // One Score parameter for each pair (our piece, their piece)
