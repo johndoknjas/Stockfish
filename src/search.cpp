@@ -1048,6 +1048,10 @@ moves_loop: // When in check, search starts here
           }
       }
 
+      // NOTE: Try:
+        // Switch statements instead of else ifs
+        // Getting rid of if statements and using boolean - int rules.
+
       // Step 15. Extensions (~66 Elo)
       // We take care to not overdo to avoid search getting stuck.
       if (ss->ply < thisThread->rootDepth * 2)
@@ -1073,46 +1077,34 @@ moves_loop: // When in check, search starts here
               value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
               ss->excludedMove = MOVE_NONE;
 
-              if (value < singularBeta)
-              {
-                  extension = 1;
-
-                  // Avoid search explosion by limiting the number of double extensions
-                  if (  !PvNode
-                      && value < singularBeta - 26
-                      && ss->doubleExtensions <= 8)
-                      extension = 2;
-              }
+              extension = (value < singularBeta);
+              extension += extension * (  !PvNode
+                                   && value < singularBeta - 26
+                                   && ss->doubleExtensions <= 8);
 
               // Multi-cut pruning
               // Our ttMove is assumed to fail high, and now we failed high also on a reduced
               // search without the ttMove. So we assume this expected Cut-node is not singular,
               // that multiple moves fail high, and we can prune the whole subtree by returning
               // a soft bound.
-              else if (singularBeta >= beta)
+              if (!extension && (singularBeta >= beta))
                   return singularBeta;
 
               // If the eval of ttMove is greater than beta, we reduce it (negative extension)
-              else if (ttValue >= beta)
-                  extension = -2;
 
-              // If the eval of ttMove is less than alpha and value, we reduce it (negative extension)
-              else if (ttValue <= alpha && ttValue <= value)
-                  extension = -1;
+              extension += (!extension && ttValue >= beta) * -2;
+              extension += (!extension && ttValue <= alpha && ttValue <= value) * -1;
           }
-
-          // Check extensions (~1 Elo)
-          else if (   givesCheck
+          else
+          {
+              extension = (givesCheck
                    && depth > 9
-                   && abs(ss->staticEval) > 71)
-              extension = 1;
-
-          // Quiet ttMove extensions (~0 Elo)
-          else if (   PvNode
+                   && abs(ss->staticEval) > 71) ||
+                   (   PvNode
                    && move == ttMove
                    && move == ss->killers[0]
-                   && (*contHist[0])[movedPiece][to_sq(move)] >= 5491)
-              extension = 1;
+                   && (*contHist[0])[movedPiece][to_sq(move)] >= 5491);
+          }
       }
 
       // Add extension to new depth
