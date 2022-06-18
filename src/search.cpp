@@ -1146,31 +1146,15 @@ moves_loop: // When in check, search starts here
       {
           Depth r = reduction(improving, depth, moveCount, delta, thisThread->rootDelta);
 
-          // Decrease reduction if position is or has been on the PV
-          // and node is not likely to fail low. (~3 Elo)
-          if (   ss->ttPv
-              && !likelyFailLow)
-              r -= 2;
-
-          // Decrease reduction if opponent's move count is high (~1 Elo)
-          if ((ss-1)->moveCount > 7)
-              r--;
-
-          // Increase reduction for cut nodes (~3 Elo)
-          if (cutNode && move != ss->killers[0])
-              r += 2;
-
-          // Increase reduction if ttMove is a capture (~3 Elo)
-          if (ttCapture)
-              r++;
-
-          // Decrease reduction for PvNodes based on depth
-          if (PvNode)
-              r -= 1 + 15 / (3 + depth);
-
-          // Increase reduction if next ply has a lot of fail high else reset count to 0
-          if ((ss+1)->cutoffCnt > 3 && !PvNode)
-              r++;
+          r += (   (ss->ttPv && !likelyFailLow) * -2       // Decrease reduction if position is or has been on the
+                                                           // PV, and node is not likely to fail low. (~3 Elo)
+                 + ((ss-1)->moveCount > 7) * -1            // Decrease reduction if opponent's move count is high (~1 Elo)
+                 + (cutNode && move != ss->killers[0]) * 2 // Increase reduction for cut nodes (~3 Elo)
+                 + ttCapture                               // Increase reduction if ttMove is a capture (~3 Elo)
+                 + PvNode * -1 * (1 + 15 / (3 + depth))    // Decrease reduction for PvNodes based on depth
+                 + ((ss+1)->cutoffCnt > 3 && !PvNode)      // Increase reduction if next ply has a lot of fail high, 
+                                                           // else reset count to 0
+               );
 
           ss->statScore =  thisThread->mainHistory[us][from_to(move)]
                          + (*contHist[0])[movedPiece][to_sq(move)]
