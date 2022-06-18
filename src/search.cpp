@@ -1048,10 +1048,6 @@ moves_loop: // When in check, search starts here
           }
       }
 
-      // NOTE: Try:
-        // Switch statements instead of else ifs
-        // Getting rid of if statements and using boolean - int rules.
-
       // Step 15. Extensions (~66 Elo)
       // We take care to not overdo to avoid search getting stuck.
       if (ss->ply < thisThread->rootDepth * 2)
@@ -1077,10 +1073,12 @@ moves_loop: // When in check, search starts here
               value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
               ss->excludedMove = MOVE_NONE;
 
-              extension = (value < singularBeta);
-              extension += extension * (  !PvNode
-                                   && value < singularBeta - 26
-                                   && ss->doubleExtensions <= 8);
+              extension = value < singularBeta;
+
+              // Avoid search explosion by limiting the number of double extensions:
+              extension *= (1 + (  !PvNode
+                                 && value < singularBeta - 26
+                                 && ss->doubleExtensions <= 8));
 
               // Multi-cut pruning
               // Our ttMove is assumed to fail high, and now we failed high also on a reduced
@@ -1090,8 +1088,13 @@ moves_loop: // When in check, search starts here
               if (!extension && (singularBeta >= beta))
                   return singularBeta;
 
-              extension += (!extension && ttValue >= beta) * -2;
-              extension += (!extension && ttValue <= alpha && ttValue <= value) * -1;
+              // If extension is still 0, then if the eval of ttMove is greater than beta, 
+              // we reduce it to -2 (negative extension):
+              extension -= (!extension && ttValue >= beta) * 2;
+
+              // If extension is still 0, then if the eval of ttMove is less than alpha and value, 
+              // we reduce it to -1 (negative extension):
+              extension -= (!extension && ttValue <= alpha && ttValue <= value);
           }
 
           // Check extensions (~1 Elo)
