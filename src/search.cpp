@@ -1073,32 +1073,28 @@ moves_loop: // When in check, search starts here
               value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
               ss->excludedMove = MOVE_NONE;
 
-              if (value < singularBeta)
-              {
-                  extension = 1;
+              extension = value < singularBeta;
 
-                  // Avoid search explosion by limiting the number of double extensions
-                  if (  !PvNode
-                      && value < singularBeta - 26
-                      && ss->doubleExtensions <= 8)
-                      extension = 2;
-              }
+              // Avoid search explosion by limiting the number of double extensions:
+              extension *= (1 + (  !PvNode
+                                 && value < singularBeta - 26
+                                 && ss->doubleExtensions <= 8));
 
               // Multi-cut pruning
               // Our ttMove is assumed to fail high, and now we failed high also on a reduced
               // search without the ttMove. So we assume this expected Cut-node is not singular,
               // that multiple moves fail high, and we can prune the whole subtree by returning
               // a soft bound.
-              else if (singularBeta >= beta)
+              if (!extension && singularBeta >= beta)
                   return singularBeta;
 
-              // If the eval of ttMove is greater than beta, we reduce it (negative extension)
-              else if (ttValue >= beta)
-                  extension = -2;
+              // If extension is still 0, then if the eval of ttMove is greater than beta, 
+              // we reduce it to -2 (negative extension):
+              extension -= (!extension && ttValue >= beta) * 2;
 
-              // If the eval of ttMove is less than alpha and value, we reduce it (negative extension)
-              else if (ttValue <= alpha && ttValue <= value)
-                  extension = -1;
+              // If extension is still 0, then if the eval of ttMove is less than alpha and value, 
+              // we reduce it to -1 (negative extension):
+              extension -= (!extension && ttValue <= alpha && ttValue <= value);
           }
 
           // Check extensions (~1 Elo)
