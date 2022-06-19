@@ -1073,12 +1073,10 @@ moves_loop: // When in check, search starts here
               value = search<NonPV>(pos, ss, singularBeta - 1, singularBeta, singularDepth, cutNode);
               ss->excludedMove = MOVE_NONE;
 
-              extension = value < singularBeta;
-
-              // Avoid search explosion by limiting the number of double extensions:
-              extension *= (1 + (  !PvNode
-                                 && value < singularBeta - 26
-                                 && ss->doubleExtensions <= 8));
+                                                // Avoid search explosion by limiting the number of double extensions:
+              extension = (value < singularBeta) + (  !PvNode
+                                                    && value < singularBeta - 26
+                                                    && ss->doubleExtensions <= 8);
 
               // Multi-cut pruning
               // Our ttMove is assumed to fail high, and now we failed high also on a reduced
