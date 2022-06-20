@@ -543,9 +543,8 @@ namespace {
         return qsearch<PvNode ? PV : NonPV>(pos, ss, alpha, beta);
 
     assert(-VALUE_INFINITE <= alpha && alpha < beta && beta <= VALUE_INFINITE);
-    assert(PvNode || (alpha == beta - 1));
+    assert((PvNode && !cutNode) || (!PvNode && alpha == beta - 1));
     assert(0 < depth && depth < MAX_PLY);
-    assert(!(PvNode && cutNode));
 
     Move pv[MAX_PLY+1], capturesSearched[32], quietsSearched[64];
     StateInfo st;
@@ -602,7 +601,7 @@ namespace {
     else
         thisThread->rootDelta = beta - alpha;
 
-    assert(ss->ply >= 0 && ss->ply < MAX_PLY);
+    assert(0 <= ss->ply && ss->ply < MAX_PLY);
 
     (ss+1)->ttPv         = false;
     (ss+1)->excludedMove = bestMove = MOVE_NONE;
@@ -1418,8 +1417,7 @@ moves_loop: // When in check, search starts here
     // Decide whether or not to include checks: this fixes also the type of
     // TT entry depth that we are going to use. Note that in qsearch we use
     // only two types of depth in TT: DEPTH_QS_CHECKS or DEPTH_QS_NO_CHECKS.
-    ttDepth = ss->inCheck || depth >= DEPTH_QS_CHECKS ? DEPTH_QS_CHECKS
-                                                  : DEPTH_QS_NO_CHECKS;
+    ttDepth = (ss->inCheck || depth >= DEPTH_QS_CHECKS) ? DEPTH_QS_CHECKS : DEPTH_QS_NO_CHECKS;
     // Transposition table lookup
     posKey = pos.key();
     tte = TT.probe(posKey, ss->ttHit);
@@ -1427,7 +1425,7 @@ moves_loop: // When in check, search starts here
     ttMove = ss->ttHit ? tte->move() : MOVE_NONE;
     pvHit = ss->ttHit && tte->is_pv();
 
-    if (  !PvNode
+    if (   !PvNode
         && ss->ttHit
         && tte->depth() >= ttDepth
         && ttValue != VALUE_NONE // Only in case of TT access race
@@ -1449,7 +1447,7 @@ moves_loop: // When in check, search starts here
                 ss->staticEval = bestValue = evaluate(pos);
 
             // ttValue can be used as a better position evaluation (~7 Elo)
-            if (    ttValue != VALUE_NONE
+            if (   ttValue != VALUE_NONE
                 && (tte->bound() & (ttValue > bestValue ? BOUND_LOWER : BOUND_UPPER)))
                 bestValue = ttValue;
         }
@@ -1507,11 +1505,11 @@ moves_loop: // When in check, search starts here
       ++moveCount;
 
       // Futility pruning and moveCount pruning (~5 Elo)
-      if (    bestValue > VALUE_TB_LOSS_IN_MAX_PLY
+      if (   bestValue > VALUE_TB_LOSS_IN_MAX_PLY
           && !givesCheck
-          &&  to_sq(move) != prevSq
-          &&  futilityBase > -VALUE_KNOWN_WIN
-          &&  type_of(move) != PROMOTION)
+          && to_sq(move) != prevSq
+          && futilityBase > -VALUE_KNOWN_WIN
+          && type_of(move) != PROMOTION)
       {
 
           if (moveCount > 2)
@@ -1533,8 +1531,7 @@ moves_loop: // When in check, search starts here
       }
 
       // Do not search moves with negative SEE values (~5 Elo)
-      if (    bestValue > VALUE_TB_LOSS_IN_MAX_PLY
-          && !pos.see_ge(move))
+      if (bestValue > VALUE_TB_LOSS_IN_MAX_PLY && !pos.see_ge(move))
           continue;
 
       // Speculative prefetch as early as possible
@@ -1546,21 +1543,15 @@ moves_loop: // When in check, search starts here
                                                                 [pos.moved_piece(move)]
                                                                 [to_sq(move)];
 
-      // Continuation history based pruning (~2 Elo)
-      if (   !capture
+      if (   !capture 
           && bestValue > VALUE_TB_LOSS_IN_MAX_PLY
-          && (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
-          && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold)
+          && (   (quietCheckEvasions > 1 && ss->inCheck) // movecount pruning for quiet check evasions
+                 // Continuation history based pruning (~2 Elo):
+              || (   (*contHist[0])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold
+                  && (*contHist[1])[pos.moved_piece(move)][to_sq(move)] < CounterMovePruneThreshold)))
           continue;
 
-      // movecount pruning for quiet check evasions
-      if (   bestValue > VALUE_TB_LOSS_IN_MAX_PLY
-          && quietCheckEvasions > 1
-          && !capture
-          && ss->inCheck)
-          continue;
-
-      quietCheckEvasions += !capture && ss->inCheck;
+      quietCheckEvasions += (!capture && ss->inCheck);
 
       // Make and search the move
       pos.do_move(move, st, givesCheck);
