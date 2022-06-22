@@ -425,7 +425,7 @@ namespace Stockfish::Eval::NNUE {
                         acc[k] = vec_add_16(acc[k], column_added[k]);
                     }
                 }
-             }
+            }
 
             // Store accumulator
             accTile = reinterpret_cast<vec_t*>(
@@ -529,6 +529,8 @@ namespace Stockfish::Eval::NNUE {
           {
             const IndexType offset = HalfDimensions * index + j * TileHeight;
             // CONTINUE HERE - try to optimize the above line, which for some reason takes a lot of instructions.
+            // Also, you could consider trying to replace IndexType with size_t (in places where either works),
+            // and see if that gives some optimization, but idk.
             auto column = reinterpret_cast<const vec_t*>(&weights[offset]);
 
             for (unsigned k = 0; k < NumRegs; ++k)
