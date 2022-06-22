@@ -411,21 +411,21 @@ namespace Stockfish::Eval::NNUE {
                 const IndexType offset_added = (n < added[i].size()) * HalfDimensions * added[i][n] + j * TileHeight;
                 auto column_added = reinterpret_cast<const vec_t*>(&weights[offset_added]);
 
-               if (n < removed[i].size())
-               {
-                   for (IndexType k = 0; k < NumRegs; ++k)
-                   {
-                       acc[k] = vec_sub_16(acc[k], column_removed[k]);
-                   }
-               }
-               if (n < added[i].size())
-               {
-                   for (IndexType k = 0; k < NumRegs; ++k)
-                   {
-                       acc[k] = vec_add_16(acc[k], column_added[k]);
-                   }
-               }
-            }
+                if (n < removed[i].size())
+                {
+                    for (IndexType k = 0; k < NumRegs; ++k)
+                    {
+                        acc[k] = vec_sub_16(acc[k], column_removed[k]);
+                    }
+                }
+                if (n < added[i].size())
+                {
+                    for (IndexType k = 0; k < NumRegs; ++k)
+                    {
+                        acc[k] = vec_add_16(acc[k], column_added[k]);
+                    }
+                }
+             }
 
             // Store accumulator
             accTile = reinterpret_cast<vec_t*>(
@@ -528,6 +528,7 @@ namespace Stockfish::Eval::NNUE {
           for (const auto index : active)
           {
             const IndexType offset = HalfDimensions * index + j * TileHeight;
+            // CONTINUE HERE - try to optimize the above line, which for some reason takes a lot of instructions.
             auto column = reinterpret_cast<const vec_t*>(&weights[offset]);
 
             for (unsigned k = 0; k < NumRegs; ++k)
