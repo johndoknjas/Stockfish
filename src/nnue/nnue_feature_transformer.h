@@ -403,6 +403,33 @@ namespace Stockfish::Eval::NNUE {
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
             // Difference calculation for the deactivated features
+            for (size_t n = 0, in_removed, in_added; 
+                 (in_removed = n < removed[i].size()) | (in_added = n < added[i].size()); // bitwise to eval both
+                 ++n)
+            {
+                const IndexType offset_removed = in_removed ? HalfDimensions * removed[i][n] + j * TileHeight : 0;
+                auto column_removed = in_removed ? reinterpret_cast<const vec_t*>(&weights[offset_removed]) : 0;
+
+                // Do same for this if above works:
+                const IndexType offset_added = in_removed ? HalfDimensions * added[i][n] + j * TileHeight : 0;
+                auto column_added = in_added ? reinterpret_cast<const vec_t*>(&weights[offset_added]) : 0;
+
+                for (IndexType k = 0; k < NumRegs; ++k)
+                {
+                    if (in_removed)
+                    {
+                        acc[k] = vec_sub_16(acc[k], column_removed[k]);
+                    }
+                    if (in_added)
+                    {
+                        acc[k] = vec_add_16(acc[k], column_added[k]);
+                    }
+                }
+            }
+
+
+
+/*
             for (const auto index : removed[i])
             {
               const IndexType offset = HalfDimensions * index + j * TileHeight;
@@ -419,6 +446,7 @@ namespace Stockfish::Eval::NNUE {
               for (IndexType k = 0; k < NumRegs; ++k)
                 acc[k] = vec_add_16(acc[k], column[k]);
             }
+*/
 
             // Store accumulator
             accTile = reinterpret_cast<vec_t*>(
