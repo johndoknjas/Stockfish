@@ -403,25 +403,23 @@ namespace Stockfish::Eval::NNUE {
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
             // Difference calculation for the deactivated features
-            for (size_t n = 0, in_removed, in_added; 
-                 (in_removed = n < removed[i].size()) | (in_added = n < added[i].size()); // bitwise to eval both
-                 ++n)
+            for (size_t n = 0; n < removed[i].size() || n < added[i].size(); ++n)
             {
-                const IndexType offset_removed = in_removed * HalfDimensions * removed[i][n] + j * TileHeight;
+                const IndexType offset_removed = (n < removed[i].size()) * HalfDimensions * removed[i][n] + j * TileHeight;
                 auto column_removed = reinterpret_cast<const vec_t*>(&weights[offset_removed]);
 
                 // Do same for this if above works:
-                const IndexType offset_added = in_added * HalfDimensions * added[i][n] + j * TileHeight;
+                const IndexType offset_added = (n < added[i].size()) * HalfDimensions * added[i][n] + j * TileHeight;
                 auto column_added = reinterpret_cast<const vec_t*>(&weights[offset_added]);
 
-               if (in_removed)
+               if (n < removed[i].size())
                {
                    for (IndexType k = 0; k < NumRegs; ++k)
                    {
                        acc[k] = vec_sub_16(acc[k], column_removed[k]);
                    }
                }
-               if (in_added)
+               if (n < added[i].size())
                {
                    for (IndexType k = 0; k < NumRegs; ++k)
                    {
