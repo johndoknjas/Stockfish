@@ -407,13 +407,29 @@ namespace Stockfish::Eval::NNUE {
                  (in_removed = n < removed[i].size()) | (in_added = n < added[i].size()); // bitwise to eval both
                  ++n)
             {
-                const IndexType offset_removed = in_removed ? HalfDimensions * removed[i][n] + j * TileHeight : 0;
-                auto column_removed = in_removed ? reinterpret_cast<const vec_t*>(&weights[offset_removed]) : 0;
+                const IndexType offset_removed = in_removed * HalfDimensions * removed[i][n] + j * TileHeight;
+                auto column_removed = reinterpret_cast<const vec_t*>(&weights[offset_removed]);
 
                 // Do same for this if above works:
-                const IndexType offset_added = in_removed ? HalfDimensions * added[i][n] + j * TileHeight : 0;
-                auto column_added = in_added ? reinterpret_cast<const vec_t*>(&weights[offset_added]) : 0;
+                const IndexType offset_added = in_added * HalfDimensions * added[i][n] + j * TileHeight;
+                auto column_added = reinterpret_cast<const vec_t*>(&weights[offset_added]);
 
+               if (in_removed)
+               {
+                   for (IndexType k = 0; k < NumRegs; ++k)
+                   {
+                       acc[k] = vec_sub_16(acc[k], column_removed[k]);
+                   }
+               }
+               if (in_added)
+               {
+                   for (IndexType k = 0; k < NumRegs; ++k)
+                   {
+                       acc[k] = vec_add_16(acc[k], column_added[k]);
+                   }
+               }
+                
+/*
                 for (IndexType k = 0; k < NumRegs; ++k)
                 {
                     if (in_removed)
@@ -425,6 +441,7 @@ namespace Stockfish::Eval::NNUE {
                         acc[k] = vec_add_16(acc[k], column_added[k]);
                     }
                 }
+                */
             }
 
 
