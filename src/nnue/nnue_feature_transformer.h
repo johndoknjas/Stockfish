@@ -283,6 +283,7 @@ namespace Stockfish::Eval::NNUE {
           - psqtAccumulation[perspectives[1]][bucket]
         ) / 2;
 
+
       for (IndexType p = 0; p < 2; ++p)
       {
           const IndexType offset = (HalfDimensions / 2) * p;
@@ -406,7 +407,6 @@ namespace Stockfish::Eval::NNUE {
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
             // Difference calculation for the deactivated features
-
             for (const auto index : removed[i])
             {
               const IndexType offset = HalfDimensions * index + j * TileHeight;
@@ -418,10 +418,10 @@ namespace Stockfish::Eval::NNUE {
             // Difference calculation for the activated features
             for (const auto index : added[i])
             {
-                const IndexType offset = HalfDimensions * index + j * TileHeight;
-                auto column = reinterpret_cast<const vec_t*>(&weights[offset]);
-                for (IndexType k = 0; k < NumRegs; ++k)
-                  acc[k] = vec_add_16(acc[k], column[k]);
+              const IndexType offset = HalfDimensions * index + j * TileHeight;
+              auto column = reinterpret_cast<const vec_t*>(&weights[offset]);
+              for (IndexType k = 0; k < NumRegs; ++k)
+                acc[k] = vec_add_16(acc[k], column[k]);
             }
 
             // Store accumulator
