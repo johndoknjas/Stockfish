@@ -303,37 +303,32 @@ namespace Stockfish::Eval::NNUE {
         const vec_t* in1_p1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][HalfDimensions / 2]));
               vec_t* out_1 = reinterpret_cast<       vec_t*>(output + offset_1);
 
-        for (IndexType j = 0; j < NumOutputChunks; j += 1)
+        for (IndexType j = 0; j < NumOutputChunks; ++j)
         {
             const vec_t pa_0 = vec_mul_16(vec_max_16(vec_min_16(in0_p0[j * 2 + 0], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p0[j * 2 + 0], One), Zero));
-
             const vec_t pb_0 = vec_mul_16(vec_max_16(vec_min_16(in0_p0[j * 2 + 1], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p0[j * 2 + 1], One), Zero));
-
             out_0[j] = vec_msb_pack_16(pa_0, pb_0);
-
 
             const vec_t pa_1 = vec_mul_16(vec_max_16(vec_min_16(in0_p1[j * 2 + 0], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p1[j * 2 + 0], One), Zero));
-
             const vec_t pb_1 = vec_mul_16(vec_max_16(vec_min_16(in0_p1[j * 2 + 1], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p1[j * 2 + 1], One), Zero));
-
             out_1[j] = vec_msb_pack_16(pa_1, pb_1);
         }
 
 #else
         for (IndexType p = 0; p < 2; ++p)
         {
-          const IndexType offset = (HalfDimensions / 2) * p;
-          for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
-              BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
-              BiasType sum1 = accumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
-              sum0 = std::max<int>(0, std::min<int>(127, sum0));
-              sum1 = std::max<int>(0, std::min<int>(127, sum1));
-              output[offset + j] = static_cast<OutputType>(sum0 * sum1 / 128);
-            }
+           const IndexType offset = (HalfDimensions / 2) * p;
+           for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
+               BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
+               BiasType sum1 = accumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
+               sum0 = std::max<int>(0, std::min<int>(127, sum0));
+               sum1 = std::max<int>(0, std::min<int>(127, sum1));
+               output[offset + j] = static_cast<OutputType>(sum0 * sum1 / 128);
+           }
         }
 
 #endif
