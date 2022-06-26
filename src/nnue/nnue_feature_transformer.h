@@ -283,11 +283,10 @@ namespace Stockfish::Eval::NNUE {
           - psqtAccumulation[perspectives[1]][bucket]
         ) / 2;
 
+#if defined(VECTOR)
 
         const IndexType offset_0 = 0;
         const IndexType offset_1 = HalfDimensions / 2;
-
-#if defined(VECTOR)
 
         constexpr IndexType OutputChunkSize = MaxChunkSize;
         static_assert((HalfDimensions / 2) % OutputChunkSize == 0);
@@ -325,21 +324,16 @@ namespace Stockfish::Eval::NNUE {
         }
 
 #else
-
-        for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
-            BiasType sum0_p0 = accumulation[static_cast<int>(perspectives[0])][j + 0];
-            BiasType sum1_p0 = accumulation[static_cast<int>(perspectives[0])][j + HalfDimensions / 2];
-
-            BiasType sum0_p1 = accumulation[static_cast<int>(perspectives[1])][j + 0];
-            BiasType sum1_p1 = accumulation[static_cast<int>(perspectives[1])][j + HalfDimensions / 2];
-
-            sum0_p0 = std::max<int>(0, std::min<int>(127, sum0_p0));
-            sum1_p0 = std::max<int>(0, std::min<int>(127, sum1_p0));
-            output[offset_0 + j] = static_cast<OutputType>(sum0_p0 * sum1_p0 / 128);
-
-            sum0_p1 = std::max<int>(1, std::min<int>(127, sum0_p1));
-            sum1_p1 = std::max<int>(1, std::min<int>(127, sum1_p1));
-            output[offset_1 + j] = static_cast<OutputType>(sum0_p1 * sum1_p1 / 128);
+        for (IndexType p = 0; p < 2; ++p)
+        {
+          const IndexType offset = (HalfDimensions / 2) * p;
+          for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
+              BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
+              BiasType sum1 = accumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
+              sum0 = std::max<int>(0, std::min<int>(127, sum0));
+              sum1 = std::max<int>(0, std::min<int>(127, sum1));
+              output[offset + j] = static_cast<OutputType>(sum0 * sum1 / 128);
+            }
         }
 
 #endif
