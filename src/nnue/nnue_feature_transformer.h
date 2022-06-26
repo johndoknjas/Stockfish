@@ -283,7 +283,9 @@ namespace Stockfish::Eval::NNUE {
           - psqtAccumulation[perspectives[1]][bucket]
         ) / 2;
 
-
+#if (defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER))
+#pragma GCC unroll 2
+#endif
       for (IndexType p = 0; p < 2; ++p)
       {
           const IndexType offset = (HalfDimensions / 2) * p;
