@@ -543,6 +543,7 @@ ifeq ($(optimize),yes)
 	CXXFLAGS += -O3
 
 	ifeq ($(comp),gcc)
+		LDFLAGS += -fopenmp -D_GLIBCXX_PARALLEL
 		ifeq ($(OS), Android)
 			CXXFLAGS += -fno-gcse -mthumb -march=armv7-a -mfloat-abi=softfp
 		endif
