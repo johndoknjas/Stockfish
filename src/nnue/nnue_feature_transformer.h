@@ -405,8 +405,7 @@ namespace Stockfish::Eval::NNUE {
 
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
-            // Difference calculation for the deactivated features
-            // Difference calculation for the activated features
+            // Difference calculation for the deactivated and activated features:
             for (std::size_t n = 0; n < removed[i].size() || n < added[i].size(); ++n)
             {
                 const IndexType offset_removed = (n < removed[i].size()) * HalfDimensions * removed[i][n] + j * TileHeight;
