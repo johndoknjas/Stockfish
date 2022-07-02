@@ -415,19 +415,11 @@ namespace Stockfish::Eval::NNUE {
                 auto column_added = reinterpret_cast<const vec_t*>(&weights[offset_added]);
 
                 if (n < removed[i].size())
-                {
                     for (IndexType k = 0; k < NumRegs; ++k)
-                    {
                         acc[k] = vec_sub_16(acc[k], column_removed[k]);
-                    }
-                }
                 if (n < added[i].size())
-                {
                     for (IndexType k = 0; k < NumRegs; ++k)
-                    {
                         acc[k] = vec_add_16(acc[k], column_added[k]);
-                    }
-                }
             }
 
             // Store accumulator
