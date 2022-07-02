@@ -319,8 +319,7 @@ namespace Stockfish::Eval::NNUE {
 
 #else
 
-          for (IndexType j = 0; j < HalfDimensions / 2; ++j) 
-          {
+          for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
               BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
               BiasType sum1 = accumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
               sum0 = std::max<int>(0, std::min<int>(127, sum0));
@@ -407,11 +406,11 @@ namespace Stockfish::Eval::NNUE {
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
             // Difference calculation for the deactivated features
+            // Difference calculation for the activated features
             for (std::size_t n = 0; n < removed[i].size() || n < added[i].size(); ++n)
             {
                 const IndexType offset_removed = (n < removed[i].size()) * HalfDimensions * removed[i][n] + j * TileHeight;
                 auto column_removed = reinterpret_cast<const vec_t*>(&weights[offset_removed]);
-
                 const IndexType offset_added = (n < added[i].size()) * HalfDimensions * added[i][n] + j * TileHeight;
                 auto column_added = reinterpret_cast<const vec_t*>(&weights[offset_added]);
 
