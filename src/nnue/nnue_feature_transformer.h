@@ -295,7 +295,6 @@ namespace Stockfish::Eval::NNUE {
 
           for (IndexType j = 0; j < NumOutputChunks; j += 1)
           {
-              // CONTINUE HERE - unroll pragma? And/or ensure GCC executes this only once?
               for (IndexType p = 0; p < 2; ++p)
               {
                   const IndexType offset = (HalfDimensions / 2) * p;
