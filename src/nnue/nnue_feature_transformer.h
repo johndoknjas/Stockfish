@@ -396,6 +396,10 @@ namespace Stockfish::Eval::NNUE {
         StateInfo *states_to_update[3] =
           { next, next == pos.state() ? nullptr : pos.state(), nullptr };
   #ifdef VECTOR
+
+  #if (defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER))
+  #pragma GCC ivdep
+  #endif
         for (IndexType j = 0; j < HalfDimensions / TileHeight; ++j)
         {
           // Load accumulator
@@ -404,9 +408,6 @@ namespace Stockfish::Eval::NNUE {
           for (IndexType k = 0; k < NumRegs; ++k)
             acc[k] = vec_load(&accTile[k]);
 
-#if (defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER))
-#pragma GCC ivdep
-#endif
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
             // Difference calculation for the deactivated features
