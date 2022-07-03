@@ -398,7 +398,7 @@ namespace Stockfish::Eval::NNUE {
   #ifdef VECTOR
 
   #if (defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER))
-  #pragma GCC ivdep
+  #pragma GCC unroll HalfDimensions / TileHeight
   #endif
         for (IndexType j = 0; j < HalfDimensions / TileHeight; ++j)
         {
