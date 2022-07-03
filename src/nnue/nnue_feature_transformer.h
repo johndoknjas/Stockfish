@@ -404,6 +404,9 @@ namespace Stockfish::Eval::NNUE {
           for (IndexType k = 0; k < NumRegs; ++k)
             acc[k] = vec_load(&accTile[k]);
 
+#if (defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER))
+#pragma GCC ivdep
+#endif
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
             // Difference calculation for the deactivated features
@@ -439,7 +442,7 @@ namespace Stockfish::Eval::NNUE {
             &st->accumulator.psqtAccumulation[perspective][j * PsqtTileHeight]);
           for (std::size_t k = 0; k < NumPsqtRegs; ++k)
             psqt[k] = vec_load_psqt(&accTilePsqt[k]);
-
+            
           for (IndexType i = 0; states_to_update[i]; ++i)
           {
             // Difference calculation for the deactivated features
