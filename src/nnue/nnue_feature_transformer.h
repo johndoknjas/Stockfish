@@ -318,8 +318,7 @@ namespace Stockfish::Eval::NNUE {
           }
 
 #else
-      for (IndexType p = 0; p < 2; ++p)
-      {
+      for (IndexType p = 0; p < 2; ++p) {
           const IndexType offset = (HalfDimensions / 2) * p;
 
           for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
