@@ -293,8 +293,8 @@ namespace Stockfish::Eval::NNUE {
         static_assert((HalfDimensions / 2) % OutputChunkSize == 0);
         constexpr IndexType NumOutputChunks = HalfDimensions / 2 / OutputChunkSize;
 
-        vec_t Zero = vec_zero();
-        vec_t One = vec_set_16(127);
+         vec_t Zero = vec_zero();
+         vec_t One = vec_set_16(127);
 
         const vec_t* in0_p0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][0]));
         const vec_t* in1_p0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][HalfDimensions / 2]));
