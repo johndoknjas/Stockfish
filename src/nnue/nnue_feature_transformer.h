@@ -296,7 +296,7 @@ namespace Stockfish::Eval::NNUE {
 
           const vec_t* in0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][0]));
           const vec_t* in1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][HalfDimensions / 2]));
-                vec_t* out = reinterpret_cast<      vec_t*>(output + 0);
+                vec_t* out = reinterpret_cast<      vec_t*>(output);
         
           const vec_t* in0_next = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][0]));
           const vec_t* in1_next = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][HalfDimensions / 2]));
