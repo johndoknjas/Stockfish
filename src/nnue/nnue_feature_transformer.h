@@ -287,8 +287,6 @@ namespace Stockfish::Eval::NNUE {
 
 #if defined(VECTOR)
 
-          const IndexType offset_0 = 0;
-          const IndexType offset_1 = HalfDimensions / 2;
           constexpr IndexType OutputChunkSize = MaxChunkSize;
           static_assert((HalfDimensions / 2) % OutputChunkSize == 0);
           constexpr IndexType NumOutputChunks = HalfDimensions / 2 / OutputChunkSize;
@@ -298,11 +296,11 @@ namespace Stockfish::Eval::NNUE {
 
           const vec_t* in0_p0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][0]));
           const vec_t* in1_p0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][HalfDimensions / 2]));
-                vec_t* out_0 = reinterpret_cast<       vec_t*>(output + offset_0);
+                vec_t* out_0 = reinterpret_cast<       vec_t*>(output + 0);
         
           const vec_t* in0_p1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][0]));
           const vec_t* in1_p1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][HalfDimensions / 2]));
-                vec_t* out_1 = reinterpret_cast<       vec_t*>(output + offset_1);
+                vec_t* out_1 = reinterpret_cast<       vec_t*>(output + HalfDimensions / 2);
 
           for (IndexType j = 0; j < NumOutputChunks; j += 1)
           {
