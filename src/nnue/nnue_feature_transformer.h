@@ -284,10 +284,11 @@ namespace Stockfish::Eval::NNUE {
         ) / 2;
 
 
-        const IndexType offset_0 = 0;
-        const IndexType offset_1 = HalfDimensions / 2;
 
 #if defined(VECTOR)
+
+          const IndexType offset_0 = 0;
+          const IndexType offset_1 = HalfDimensions / 2;
 
           constexpr IndexType OutputChunkSize = MaxChunkSize;
           static_assert((HalfDimensions / 2) % OutputChunkSize == 0);
