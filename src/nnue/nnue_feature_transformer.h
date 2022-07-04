@@ -294,27 +294,27 @@ namespace Stockfish::Eval::NNUE {
           vec_t Zero = vec_zero();
           vec_t One = vec_set_16(127);
 
-          const vec_t* in0_p0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][0]));
-          const vec_t* in1_p0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][HalfDimensions / 2]));
-                vec_t* out_0 = reinterpret_cast<       vec_t*>(output + 0);
+          const vec_t* in0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][0]));
+          const vec_t* in1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][HalfDimensions / 2]));
+                vec_t* out = reinterpret_cast<       vec_t*>(output + 0);
         
-          const vec_t* in0_p1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][0]));
-          const vec_t* in1_p1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][HalfDimensions / 2]));
-                vec_t* out_1 = reinterpret_cast<       vec_t*>(output + HalfDimensions / 2);
+          const vec_t* in0_next = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][0]));
+          const vec_t* in1_next = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][HalfDimensions / 2]));
+                vec_t* out_next = reinterpret_cast<       vec_t*>(output + HalfDimensions / 2);
 
           for (IndexType j = 0; j < NumOutputChunks; j += 1)
           {
-              const vec_t pa_0 = vec_mul_16(vec_max_16(vec_min_16(in0_p0[j * 2 + 0], One), Zero), 
-                                            vec_max_16(vec_min_16(in1_p0[j * 2 + 0], One), Zero));
-              const vec_t pb_0 = vec_mul_16(vec_max_16(vec_min_16(in0_p0[j * 2 + 1], One), Zero), 
-                                            vec_max_16(vec_min_16(in1_p0[j * 2 + 1], One), Zero));
-              out_0[j] = vec_msb_pack_16(pa_0, pb_0);
+              const vec_t pa_0 = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 0], One), Zero), 
+                                            vec_max_16(vec_min_16(in1[j * 2 + 0], One), Zero));
+              const vec_t pb_0 = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 1], One), Zero), 
+                                            vec_max_16(vec_min_16(in1[j * 2 + 1], One), Zero));
+              out[j] = vec_msb_pack_16(pa_0, pb_0);
 
-              const vec_t pa_1 = vec_mul_16(vec_max_16(vec_min_16(in0_p1[j * 2 + 0], One), Zero), 
-                                            vec_max_16(vec_min_16(in1_p1[j * 2 + 0], One), Zero));
-              const vec_t pb_1 = vec_mul_16(vec_max_16(vec_min_16(in0_p1[j * 2 + 1], One), Zero), 
-                                            vec_max_16(vec_min_16(in1_p1[j * 2 + 1], One), Zero));
-              out_1[j] = vec_msb_pack_16(pa_1, pb_1);
+              const vec_t pa_1 = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 0], One), Zero), 
+                                            vec_max_16(vec_min_16(in1_next[j * 2 + 0], One), Zero));
+              const vec_t pb_1 = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 1], One), Zero), 
+                                            vec_max_16(vec_min_16(in1_next[j * 2 + 1], One), Zero));
+              out_next[j] = vec_msb_pack_16(pa_1, pb_1);
           }
 
 #else
