@@ -308,39 +308,31 @@ namespace Stockfish::Eval::NNUE {
         {
             const vec_t pa_0 = vec_mul_16(vec_max_16(vec_min_16(in0_p0[j * 2 + 0], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p0[j * 2 + 0], One), Zero));
-
             const vec_t pb_0 = vec_mul_16(vec_max_16(vec_min_16(in0_p0[j * 2 + 1], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p0[j * 2 + 1], One), Zero));
-
             out_0[j] = vec_msb_pack_16(pa_0, pb_0);
-
 
             const vec_t pa_1 = vec_mul_16(vec_max_16(vec_min_16(in0_p1[j * 2 + 0], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p1[j * 2 + 0], One), Zero));
-
             const vec_t pb_1 = vec_mul_16(vec_max_16(vec_min_16(in0_p1[j * 2 + 1], One), Zero), 
                                           vec_max_16(vec_min_16(in1_p1[j * 2 + 1], One), Zero));
-
             out_1[j] = vec_msb_pack_16(pa_1, pb_1);
         }
 
 #else
+      for (IndexType p = 0; p < 2; ++p)
+       {
+          const IndexType offset = (HalfDimensions / 2) * p;
 
-        for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
-            BiasType sum0_p0 = accumulation[static_cast<int>(perspectives[0])][j + 0];
-            BiasType sum1_p0 = accumulation[static_cast<int>(perspectives[0])][j + HalfDimensions / 2];
-
-            BiasType sum0_p1 = accumulation[static_cast<int>(perspectives[1])][j + 0];
-            BiasType sum1_p1 = accumulation[static_cast<int>(perspectives[1])][j + HalfDimensions / 2];
-
-            sum0_p0 = std::max<int>(0, std::min<int>(127, sum0_p0));
-            sum1_p0 = std::max<int>(0, std::min<int>(127, sum1_p0));
-            output[offset_0 + j] = static_cast<OutputType>(sum0_p0 * sum1_p0 / 128);
-
-            sum0_p1 = std::max<int>(1, std::min<int>(127, sum0_p1));
-            sum1_p1 = std::max<int>(1, std::min<int>(127, sum1_p1));
-            output[offset_1 + j] = static_cast<OutputType>(sum0_p1 * sum1_p1 / 128);
-        }
+          for (IndexType j = 0; j < HalfDimensions / 2; ++j) 
+          {
+              BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
+              BiasType sum1 = accumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
+              sum0 = std::max<int>(0, std::min<int>(127, sum0));
+              sum1 = std::max<int>(0, std::min<int>(127, sum1));
+              output[offset + j] = static_cast<OutputType>(sum0 * sum1 / 128);
+          }
+       }
 
 #endif
 
@@ -408,7 +400,7 @@ namespace Stockfish::Eval::NNUE {
         // Now update the accumulators listed in states_to_update[], where the last element is a sentinel.
         StateInfo *states_to_update[3] =
           { next, next == pos.state() ? nullptr : pos.state(), nullptr };
-   #ifdef VECTOR
+  #ifdef VECTOR
         for (IndexType j = 0; j < HalfDimensions / TileHeight; ++j)
         {
           // Load accumulator
@@ -480,7 +472,6 @@ namespace Stockfish::Eval::NNUE {
               vec_store_psqt(&accTilePsqt[k], psqt[k]);
           }
         }
-
 
   #else
         for (IndexType i = 0; states_to_update[i]; ++i)
