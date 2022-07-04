@@ -289,9 +289,9 @@ namespace Stockfish::Eval::NNUE {
 
 #if defined(VECTOR)
 
-        constexpr IndexType OutputChunkSize = MaxChunkSize;
-        static_assert((HalfDimensions / 2) % OutputChunkSize == 0);
-        constexpr IndexType NumOutputChunks = HalfDimensions / 2 / OutputChunkSize;
+          constexpr IndexType OutputChunkSize = MaxChunkSize;
+          static_assert((HalfDimensions / 2) % OutputChunkSize == 0);
+          constexpr IndexType NumOutputChunks = HalfDimensions / 2 / OutputChunkSize;
 
           vec_t Zero = vec_zero();
           vec_t One = vec_set_16(127);
