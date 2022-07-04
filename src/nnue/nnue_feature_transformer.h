@@ -304,17 +304,17 @@ namespace Stockfish::Eval::NNUE {
 
           for (IndexType j = 0; j < NumOutputChunks; j += 1)
           {
-              const vec_t pa_0 = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 0], One), Zero), 
+              const vec_t pa = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 0], One), Zero), 
                                             vec_max_16(vec_min_16(in1[j * 2 + 0], One), Zero));
-              const vec_t pb_0 = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 1], One), Zero), 
+              const vec_t pb = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 1], One), Zero), 
                                             vec_max_16(vec_min_16(in1[j * 2 + 1], One), Zero));
-              out[j] = vec_msb_pack_16(pa_0, pb_0);
+              out[j] = vec_msb_pack_16(pa, pb);
 
-              const vec_t pa_1 = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 0], One), Zero), 
+              const vec_t pa_next = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 0], One), Zero), 
                                             vec_max_16(vec_min_16(in1_next[j * 2 + 0], One), Zero));
-              const vec_t pb_1 = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 1], One), Zero), 
+              const vec_t pb_next = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 1], One), Zero), 
                                             vec_max_16(vec_min_16(in1_next[j * 2 + 1], One), Zero));
-              out_next[j] = vec_msb_pack_16(pa_1, pb_1);
+              out_next[j] = vec_msb_pack_16(pa_next, pb_next);
           }
 
 #else
