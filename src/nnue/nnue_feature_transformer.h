@@ -321,7 +321,7 @@ namespace Stockfish::Eval::NNUE {
 
 #else
       for (IndexType p = 0; p < 2; ++p)
-       {
+      {
           const IndexType offset = (HalfDimensions / 2) * p;
 
           for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
@@ -331,7 +331,7 @@ namespace Stockfish::Eval::NNUE {
               sum1 = std::max<int>(0, std::min<int>(127, sum1));
               output[offset + j] = static_cast<OutputType>(sum0 * sum1 / 128);
           }
-       }
+      }
 
 #endif
 
