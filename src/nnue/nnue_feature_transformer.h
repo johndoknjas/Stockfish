@@ -318,6 +318,7 @@ namespace Stockfish::Eval::NNUE {
           }
 
 #else
+
       for (IndexType p = 0; p < 2; ++p)
           for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
               BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
