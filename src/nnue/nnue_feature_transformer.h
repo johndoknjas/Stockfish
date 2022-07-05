@@ -284,6 +284,9 @@ namespace Stockfish::Eval::NNUE {
         ) / 2;
 
 
+#if (defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER))
+#pragma GCC ivdep
+#endif
       for (IndexType p = 0; p < 2; ++p)
       {
           const IndexType offset = (HalfDimensions / 2) * p;
@@ -316,7 +319,8 @@ namespace Stockfish::Eval::NNUE {
 
 #else
 
-          for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
+          for (IndexType j = 0; j < HalfDimensions / 2; ++j) 
+          {
               BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
               BiasType sum1 = accumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
               sum0 = std::max<int>(0, std::min<int>(127, sum0));
