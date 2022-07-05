@@ -326,7 +326,6 @@ namespace Stockfish::Eval::NNUE {
               sum1 = std::max<int>(0, std::min<int>(127, sum1));
               output[p * (HalfDimensions / 2) + j] = static_cast<OutputType>(sum0 * sum1 / 128);
           }
-      }
 
 #endif
 
