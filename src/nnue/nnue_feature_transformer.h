@@ -293,37 +293,38 @@ namespace Stockfish::Eval::NNUE {
           vec_t Zero = vec_zero();
           vec_t One = vec_set_16(127);
 
+          const vec_t* in0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][0]));
+          const vec_t* in1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[0]][HalfDimensions / 2]));
+                vec_t* out = reinterpret_cast<      vec_t*>(output);
+        
+          const vec_t* in0_next = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][0]));
+          const vec_t* in1_next = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[1]][HalfDimensions / 2]));
+                vec_t* out_next = reinterpret_cast<      vec_t*>(output + HalfDimensions / 2);
+
           for (IndexType j = 0; j < NumOutputChunks; j += 1)
           {
-              for (IndexType p = 0; p < 2; ++p)
-              {
-                  const IndexType offset = (HalfDimensions / 2) * p;
-                  const vec_t* in0 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[p]][0]));
-                  const vec_t* in1 = reinterpret_cast<const vec_t*>(&(accumulation[perspectives[p]][HalfDimensions / 2]));
-                        vec_t* out = reinterpret_cast<      vec_t*>(output + offset);
+              const vec_t pa = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 0], One), Zero), 
+                                          vec_max_16(vec_min_16(in1[j * 2 + 0], One), Zero));
+              const vec_t pb = vec_mul_16(vec_max_16(vec_min_16(in0[j * 2 + 1], One), Zero), 
+                                          vec_max_16(vec_min_16(in1[j * 2 + 1], One), Zero));
+              out[j] = vec_msb_pack_16(pa, pb);
 
-                  const vec_t sum0a = vec_max_16(vec_min_16(in0[j * 2 + 0], One), Zero);
-                  const vec_t sum0b = vec_max_16(vec_min_16(in0[j * 2 + 1], One), Zero);
-                  const vec_t sum1a = vec_max_16(vec_min_16(in1[j * 2 + 0], One), Zero);
-                  const vec_t sum1b = vec_max_16(vec_min_16(in1[j * 2 + 1], One), Zero);
-
-                  const vec_t pa = vec_mul_16(sum0a, sum1a);
-                  const vec_t pb = vec_mul_16(sum0b, sum1b);
-
-                  out[j] = vec_msb_pack_16(pa, pb);
-              }
+              const vec_t pa_next = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 0], One), Zero), 
+                                               vec_max_16(vec_min_16(in1_next[j * 2 + 0], One), Zero));
+              const vec_t pb_next = vec_mul_16(vec_max_16(vec_min_16(in0_next[j * 2 + 1], One), Zero), 
+                                               vec_max_16(vec_min_16(in1_next[j * 2 + 1], One), Zero));
+              out_next[j] = vec_msb_pack_16(pa_next, pb_next);
           }
 
 #else
+
       for (IndexType p = 0; p < 2; ++p)
-      {
-          const IndexType offset = (HalfDimensions / 2) * p;
           for (IndexType j = 0; j < HalfDimensions / 2; ++j) {
               BiasType sum0 = accumulation[static_cast<int>(perspectives[p])][j + 0];
               BiasType sum1 = accumulation[static_cast<int>(perspectives[p])][j + HalfDimensions / 2];
               sum0 = std::max<int>(0, std::min<int>(127, sum0));
               sum1 = std::max<int>(0, std::min<int>(127, sum1));
-              output[offset + j] = static_cast<OutputType>(sum0 * sum1 / 128);
+              output[p * (HalfDimensions / 2) + j] = static_cast<OutputType>(sum0 * sum1 / 128);
           }
       }
 
