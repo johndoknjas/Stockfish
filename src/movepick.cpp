@@ -137,17 +137,22 @@ void MovePicker::score() {
                    +     (*captureHistory)[pos.moved_piece(m)][to_sq(m)][type_of(pos.piece_on(to_sq(m)))];
 
       else if constexpr (Type == QUIETS)
+      {
+          const Piece moved_piece_m = pos.moved_piece(m);
+          const Square to_sq_m = to_sq(m);
+
           m.value =      (*mainHistory)[pos.side_to_move()][from_to(m)]
-                   + 2 * (*continuationHistory[0])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[1])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[3])[pos.moved_piece(m)][to_sq(m)]
-                   +     (*continuationHistory[5])[pos.moved_piece(m)][to_sq(m)]
+                   + 2 * (*continuationHistory[0])[moved_piece_m][to_sq_m]
+                   +     (*continuationHistory[1])[moved_piece_m][to_sq_m]
+                   +     (*continuationHistory[3])[moved_piece_m][to_sq_m]
+                   +     (*continuationHistory[5])[moved_piece_m][to_sq_m]
                    +     (threatened & from_sq(m) ?
-                           (type_of(pos.moved_piece(m)) == QUEEN && !(to_sq(m) & threatenedByRook)  ? 50000
-                          : type_of(pos.moved_piece(m)) == ROOK  && !(to_sq(m) & threatenedByMinor) ? 25000
-                          :                                         !(to_sq(m) & threatenedByPawn)  ? 15000
+                           (type_of(moved_piece_m) == QUEEN && !(to_sq_m & threatenedByRook)  ? 50000
+                          : type_of(moved_piece_m) == ROOK  && !(to_sq_m & threatenedByMinor) ? 25000
+                          :                                         !(to_sq_m & threatenedByPawn)  ? 15000
                           :                                                                           0)
                           :                                                                           0);
+      }
 
       else // Type == EVASIONS
       {
