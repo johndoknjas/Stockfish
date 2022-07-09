@@ -58,14 +58,6 @@ using namespace Search;
 
 namespace {
 
-  int null_move_1 = 14695;
-  int null_move_2 = 15;
-  int null_move_3 = 15;
-  int null_move_4 = 201;
-  int null_move_5 = 24;
-
-  TUNE(null_move_1, null_move_2, null_move_3, null_move_4, null_move_5);
-
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -808,10 +800,10 @@ namespace {
     // Step 9. Null move search with verification search (~22 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < null_move_1
+        && (ss-1)->statScore < 15517
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - null_move_2 * depth - improvement / null_move_3 + null_move_4 + complexity / null_move_5
+        &&  ss->staticEval >= beta - 14 * depth - improvement / 14 + 188 + complexity / 24
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
