@@ -22,6 +22,7 @@
 #include <cstring>   // For std::memset
 #include <iostream>
 #include <sstream>
+#include <unordered_map>
 
 #include "evaluate.h"
 #include "misc.h"
@@ -69,9 +70,23 @@ namespace {
   // Reductions lookup table, initialized at startup
   int Reductions[MAX_MOVES]; // [depth or moveNumber]
 
+  std::unordered_map<int64_t, int> results_map = {};
+
   Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta) {
+    int64_t delta_rootDelta_key = (((int64_t)rootDelta)<<32) | ((int64_t)int(delta));
+    int resultant_value;
+    if (results_map.find(delta_rootDelta_key) == results_map.end())
+    {
+        resultant_value = int(delta) * 1024 / int(rootDelta);
+        results_map[delta_rootDelta_key] = resultant_value;
+
+    }
+    else
+    {
+        resultant_value = results_map[delta_rootDelta_key];
+    }
     int r = Reductions[d] * Reductions[mn];
-    return (r + 1463 - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 1010);
+    return (r + 1463 - resultant_value) / 1024 + (!i && r > 1010);
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
