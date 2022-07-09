@@ -58,6 +58,11 @@ using namespace Search;
 
 namespace {
 
+  int first_reduction = 1463;
+  int second_reduction = 1010;
+
+  TUNE(first_reduction, second_reduction);
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
@@ -71,7 +76,7 @@ namespace {
 
   Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta) {
     int r = Reductions[d] * Reductions[mn];
-    return (r + 1463 - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 1010);
+    return (r + first_reduction - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > second_reduction);
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
