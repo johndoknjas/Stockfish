@@ -58,12 +58,16 @@ using namespace Search;
 
 namespace {
 
+  int futility_var = 168;
+
+  TUNE(futility_var);
+
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
-    return Value(168 * (d - improving));
+    return Value(futility_var * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
