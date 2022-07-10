@@ -59,19 +59,20 @@ using namespace Search;
 namespace {
 
   int null_move_1 = 14695;
-  int null_move_2 = 15;
-  int null_move_3 = 15;
   int null_move_4 = 201;
-  int null_move_5 = 24;
 
-  TUNE(null_move_1, null_move_2, null_move_3, null_move_4, null_move_5);
+  int first_reduction = 1463;
+
+  int futility_var = 168;
+
+  TUNE(null_move_1, null_move_4, first_reduction, futility_var);
 
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
-    return Value(168 * (d - improving));
+    return Value(futility_var * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -79,7 +80,7 @@ namespace {
 
   Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta) {
     int r = Reductions[d] * Reductions[mn];
-    return (r + 1463 - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 1010);
+    return (r + first_reduction - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 1010);
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -811,7 +812,7 @@ namespace {
         && (ss-1)->statScore < null_move_1
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - null_move_2 * depth - improvement / null_move_3 + null_move_4 + complexity / null_move_5
+        &&  ss->staticEval >= beta - 15 * depth - improvement / 15 + null_move_4 + complexity / 24
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
