@@ -58,21 +58,12 @@ using namespace Search;
 
 namespace {
 
-  int null_move_1 = 14695;
-  int null_move_4 = 201;
-
-  int first_reduction = 1463;
-
-  int futility_var = 168;
-
-  TUNE(null_move_1, null_move_4, first_reduction, futility_var);
-
   // Different node types, used as a template parameter
   enum NodeType { NonPV, PV, Root };
 
   // Futility margin
   Value futility_margin(Depth d, bool improving) {
-    return Value(futility_var * (d - improving));
+    return Value(160 * (d - improving));
   }
 
   // Reductions lookup table, initialized at startup
@@ -80,7 +71,7 @@ namespace {
 
   Depth reduction(bool i, Depth d, int mn, Value delta, Value rootDelta) {
     int r = Reductions[d] * Reductions[mn];
-    return (r + first_reduction - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 1010);
+    return (r + 1450 - int(delta) * 1024 / int(rootDelta)) / 1024 + (!i && r > 1010);
   }
 
   constexpr int futility_move_count(bool improving, Depth depth) {
@@ -811,10 +802,10 @@ namespace {
     // Step 9. Null move search with verification search (~22 Elo)
     if (   !PvNode
         && (ss-1)->currentMove != MOVE_NULL
-        && (ss-1)->statScore < null_move_1
+        && (ss-1)->statScore < 14758
         &&  eval >= beta
         &&  eval >= ss->staticEval
-        &&  ss->staticEval >= beta - 15 * depth - improvement / 15 + null_move_4 + complexity / 24
+        &&  ss->staticEval >= beta - 15 * depth - improvement / 15 + 181 + complexity / 24
         && !excludedMove
         &&  pos.non_pawn_material(us)
         && (ss->ply >= thisThread->nmpMinPly || us != thisThread->nmpColor))
