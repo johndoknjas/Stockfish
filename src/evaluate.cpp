@@ -37,9 +37,11 @@
 
 namespace Stockfish {
 
-Value psqt_weight = 125;
-Value positional_weight = 131;
-TUNE(psqt_weight, positional_weight);
+Value big_psqt_weight = 125;
+Value big_positional_weight = 131;
+Value small_psqt_weight = 125;
+Value small_positional_weight = 131;
+TUNE(big_psqt_weight, big_positional_weight, small_psqt_weight, small_positional_weight);
 
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
@@ -69,13 +71,15 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
                                        : networks.big.evaluate(pos, &caches.big);
 
-    Value nnue = (psqt_weight * psqt + positional_weight * positional) / 128;
+    Value nnue = ((smallNet ? small_psqt_weight : big_psqt_weight) * psqt +
+                  (smallNet ? small_positional_weight : big_positional_weight) * positional)
+                  / 128;
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet && (nnue * psqt < 0 || std::abs(nnue) < 227))
     {
         std::tie(psqt, positional) = networks.big.evaluate(pos, &caches.big);
-        nnue                       = (psqt_weight * psqt + positional_weight * positional) / 128;
+        nnue                       = (big_psqt_weight * psqt + big_positional_weight * positional) / 128;
         smallNet                   = false;
     }
 
