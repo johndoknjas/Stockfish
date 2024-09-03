@@ -37,6 +37,10 @@
 
 namespace Stockfish {
 
+Value psqt_weight = 125;
+Value positional_weight = 131;
+TUNE(psqt_weight, positional_weight);
+
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
 // an approximation of the material advantage on the board in terms of pawns.
@@ -64,8 +68,6 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     auto [psqt, positional] = smallNet ? networks.small.evaluate(pos, &caches.small)
                                        : networks.big.evaluate(pos, &caches.big);
-    Value psqt_weight = 125;
-    Value positional_weight = 131;
 
     Value nnue = (psqt_weight * psqt + positional_weight * positional) / 128;
 
