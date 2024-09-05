@@ -412,6 +412,10 @@ class FeatureTransformer {
               6;
     #endif
 
+    #if (defined(__GNUC__) && !defined(__clang__) && !defined(__INTEL_COMPILER))
+    #pragma GCC unroll NumOutputChunks
+    #endif
+
             for (IndexType j = 0; j < NumOutputChunks; ++j)
             {
                 const vec_t sum0a =
