@@ -37,8 +37,8 @@
 
 namespace Stockfish {
 
-int diff = 200;
-TUNE(SetRange(0, 1000), diff);
+int diff = 247;
+TUNE(SetRange(200, 1000), diff);
 
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
@@ -71,7 +71,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
     Value nnue = (125 * psqt + 131 * positional) / 128;
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
-    if (smallNet && ((nnue * psqt < 0 || abs(nnue - psqt) > diff) || std::abs(nnue) < 227))
+    if (smallNet && (nnue * psqt < 0 || std::abs(nnue - psqt) > diff || std::abs(nnue) < 227))
     {
         std::tie(psqt, positional) = networks.big.evaluate(pos, &caches.big);
         nnue                       = (125 * psqt + 131 * positional) / 128;
