@@ -73,7 +73,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet &&
-        ((nnue && psqt && diff / ((abs_nnue + abs_psqt)/2) * 1000 >= 1975) || abs_nnue < 227)
+        ((nnue && psqt && diff / ((abs_nnue + abs_psqt)/2) * 1000 >= 1900) || abs_nnue < 227)
        )
     {
         std::tie(psqt, positional) = networks.big.evaluate(pos, &caches.big);
