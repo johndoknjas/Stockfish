@@ -37,9 +37,6 @@
 
 namespace Stockfish {
 
-int permille_diff = 2000;
-TUNE(SetRange(0, 2000), permille_diff);
-
 // Returns a static, purely materialistic evaluation of the position from
 // the point of view of the given color. It can be divided by PawnValue to get
 // an approximation of the material advantage on the board in terms of pawns.
@@ -76,7 +73,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet &&
-        ((nnue && psqt && diff / ((abs_nnue + abs_psqt)/2) * 1000 >= permille_diff) || abs_nnue < 227)
+        ((nnue && psqt && diff / ((abs_nnue + abs_psqt)/2) * 1000 >= 1975) || abs_nnue < 227)
        )
     {
         std::tie(psqt, positional) = networks.big.evaluate(pos, &caches.big);
