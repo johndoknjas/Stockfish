@@ -69,7 +69,7 @@ Value Eval::evaluate(const Eval::NNUE::Networks&    networks,
 
     // Re-evaluate the position when higher eval accuracy is worth the time spent
     if (smallNet &&
-        ((nnue && psqt && 100 * std::abs(nnue - psqt) >= 81 * (std::abs(nnue) + std::abs(psqt)))
+        ((nnue && psqt && 5 * std::abs(nnue - psqt) >= 4 * (std::abs(nnue) + std::abs(psqt)))
          || std::abs(nnue) < 227
         )
        )
