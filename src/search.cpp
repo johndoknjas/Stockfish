@@ -242,8 +242,9 @@ void Search::Worker::iterative_deepening() {
     ss->pv = pv;
 
     if (mainThread)
-        mainThread->iterValue.fill(mainThread->bestPreviousScore == VALUE_INFINITE ?
-                                   VALUE_ZERO : mainThread->bestPreviousScore);
+        mainThread->iterValue.fill(mainThread->bestPreviousScore == VALUE_INFINITE
+                                     ? VALUE_ZERO
+                                     : mainThread->bestPreviousScore);
 
     size_t multiPV = size_t(options["MultiPV"]);
     Skill skill(options["Skill Level"], options["UCI_LimitStrength"] ? int(options["UCI_Elo"]) : 0);
@@ -258,8 +259,8 @@ void Search::Worker::iterative_deepening() {
     int searchAgainCounter = 0;
 
     // Iterative deepening loop until requested to stop or the target depth is reached
-    for (++rootDepth; rootDepth < MAX_PLY && !threads.stop &&
-         !(limits.depth && mainThread && rootDepth > limits.depth); ++rootDepth)
+    while (++rootDepth < MAX_PLY && !threads.stop
+           && !(limits.depth && mainThread && rootDepth > limits.depth))
     {
         // Age out PV variability metric
         if (mainThread)
@@ -537,6 +538,7 @@ Value Search::Worker::search(
     Value bestValue, value, eval, maxValue, probCutBeta;
     bool  givesCheck, improving, priorCapture, opponentWorsening, capture, ttCapture;
     Piece movedPiece;
+
     ValueList<Move, 32> capturesSearched, quietsSearched;
 
     // Step 1. Initialize node
@@ -936,9 +938,9 @@ moves_loop:  // When in check, search starts here
         givesCheck = pos.gives_check(move);
 
         // Calculate new depth for this move
-        newDepth  = depth - 1;
-        int delta = beta - alpha;
-        Depth r   = reduction(improving, depth, moveCount, delta);
+        newDepth    = depth - 1;
+        int   delta = beta - alpha;
+        Depth r     = reduction(improving, depth, moveCount, delta);
 
         // Step 14. Pruning at shallow depth (~120 Elo).
         // Depth conditions are important for mate finding.
@@ -1681,16 +1683,18 @@ Value value_from_tt(Value v, int ply, int r50c) {
     // handle TB win or better
     if (v >= VALUE_TB_WIN_IN_MAX_PLY)
         // Downgrade a potentially false mate score, or a potentially false TB score.
-        return    (v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 100 - r50c)
-               || VALUE_TB - v > 100 - r50c ?
-               VALUE_TB_WIN_IN_MAX_PLY - 1 : v - ply;
+        return (v >= VALUE_MATE_IN_MAX_PLY && VALUE_MATE - v > 100 - r50c)
+                || VALUE_TB - v > 100 - r50c
+               ? VALUE_TB_WIN_IN_MAX_PLY - 1
+               : v - ply;
 
     // handle TB loss or worse
     if (v <= VALUE_TB_LOSS_IN_MAX_PLY)
         // Downgrade a potentially false mate score, or a potentially false TB score.
-        return     (v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 100 - r50c)
-                || VALUE_TB + v > 100 - r50c ?
-               VALUE_TB_LOSS_IN_MAX_PLY + 1 : v + ply;
+        return (v <= VALUE_MATED_IN_MAX_PLY && VALUE_MATE + v > 100 - r50c)
+                || VALUE_TB + v > 100 - r50c
+               ? VALUE_TB_LOSS_IN_MAX_PLY + 1
+               : v + ply;
 
     return v;
 }
@@ -1866,7 +1870,8 @@ void syzygy_extend_pv(const OptionsMap&         options,
     auto time_abort = [&t_start, &moveOverhead, &limits]() -> bool {
         auto t_end = std::chrono::steady_clock::now();
         return limits.use_time_management()
-            && 2 * std::chrono::duration<double, std::milli>(t_end - t_start).count() > moveOverhead;
+            && 2 * std::chrono::duration<double, std::milli>(t_end - t_start).count()
+                 > moveOverhead;
     };
 
     std::list<StateInfo> sts;
@@ -1924,7 +1929,7 @@ void syzygy_extend_pv(const OptionsMap&         options,
         RootMoves legalMoves;
         for (const auto& m : MoveList<LEGAL>(pos))
         {
-            auto& rm = legalMoves.emplace_back(m);
+            auto&     rm = legalMoves.emplace_back(m);
             StateInfo tmpSI;
             pos.do_move(m, tmpSI);
             // Give a score of each move to break DTZ ties restricting opponent mobility,
@@ -2027,8 +2032,9 @@ void SearchManager::pv(Search::Worker&           worker,
             pv.pop_back();
 
         auto wdl   = worker.options["UCI_ShowWDL"] ? UCIEngine::wdl(v, pos) : "";
-        auto bound = rootMoves[i].scoreLowerbound ? "lowerbound" :
-                     rootMoves[i].scoreUpperbound ? "upperbound" : "";
+        auto bound = rootMoves[i].scoreLowerbound ? "lowerbound"
+                   : rootMoves[i].scoreUpperbound ? "upperbound"
+                                                  : "";
 
         InfoFull info;
 
