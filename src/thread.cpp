@@ -140,7 +140,7 @@ void ThreadPool::set(const NumaConfig&                           numaConfig,
                      Search::SharedState                         sharedState,
                      const Search::SearchManager::UpdateContext& updateContext) {
 
-    if (threads.size() > 0)  // destroy any existing thread(s)
+    if (!threads.empty())  // destroy any existing thread(s)
     {
         main_thread()->wait_for_search_finished();
 
@@ -203,7 +203,7 @@ void ThreadPool::set(const NumaConfig&                           numaConfig,
 
 // Sets threadPool data to initial values
 void ThreadPool::clear() {
-    if (threads.size() == 0)
+    if (threads.empty())
         return;
 
     for (auto&& th : threads)
