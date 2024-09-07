@@ -2027,9 +2027,8 @@ void SearchManager::pv(Search::Worker&           worker,
             pv.pop_back();
 
         auto wdl   = worker.options["UCI_ShowWDL"] ? UCIEngine::wdl(v, pos) : "";
-        auto bound = rootMoves[i].scoreLowerbound
-                     ? "lowerbound"
-                     : (rootMoves[i].scoreUpperbound ? "upperbound" : "");
+        auto bound = rootMoves[i].scoreLowerbound ? "lowerbound" :
+                     rootMoves[i].scoreUpperbound ? "upperbound" : "";
 
         InfoFull info;
 
@@ -2070,11 +2069,8 @@ bool RootMove::extract_ponder_from_tt(const TranspositionTable& tt, Position& po
     pos.do_move(pv[0], st);
 
     auto [ttHit, ttData, ttWriter] = tt.probe(pos.key());
-    if (ttHit)
-    {
-        if (MoveList<LEGAL>(pos).contains(ttData.move))
-            pv.push_back(ttData.move);
-    }
+    if (ttHit && MoveList<LEGAL>(pos).contains(ttData.move))
+        pv.push_back(ttData.move);
 
     pos.undo_move(pv[0]);
     return pv.size() > 1;
