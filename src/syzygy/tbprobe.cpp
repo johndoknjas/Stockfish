@@ -728,7 +728,7 @@ do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* result) 
     uint64_t   idx;
     int        next = 0, size = 0, leadPawnsCnt = 0;
     PairsData* d;
-    Bitboard   b, leadPawns = 0;
+    Bitboard   leadPawns = 0, b;
     File       tbFile = FILE_A;
 
     // A given TB entry like KRK has associated two material keys: KRvk and Kvkr.
