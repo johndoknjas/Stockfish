@@ -478,10 +478,8 @@ class TBTables {
     template<TBType Type>
     TBTable<Type>* get(Key key) {
         for (const Entry* entry = &hashTable[uint32_t(key) & (Size - 1)];; ++entry)
-        {
             if (entry->key == key || !entry->get<Type>())
                 return entry->get<Type>();
-        }
     }
 
     void clear() {
