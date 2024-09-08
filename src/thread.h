@@ -115,7 +115,7 @@ class ThreadPool {
 
     ~ThreadPool() {
         // destroy any existing thread(s)
-        if (threads.size() > 0)
+        if (!threads.empty())
         {
             main_thread()->wait_for_search_finished();
 

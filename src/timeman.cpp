@@ -92,9 +92,7 @@ void TimeManagement::init(Search::LimitsType& limits,
 
     // If less than one second, gradually reduce mtg
     if (scaledTime < 1000 && double(mtg) / scaledInc > 0.05)
-    {
         mtg = scaledTime * 0.05;
-    }
 
     // Make sure timeLeft is > 0 since we may use it as a divisor
     TimePoint timeLeft = std::max(TimePoint(1), limits.time[us] + limits.inc[us] * (mtg - 1)

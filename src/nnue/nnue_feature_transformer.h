@@ -258,10 +258,11 @@ class FeatureTransformer {
 
     void permute_weights([[maybe_unused]] void (*order_fn)(uint64_t*)) const {
 #if defined(USE_AVX2)
+    constexpr IndexType di =
     #if defined(USE_AVX512)
-        constexpr IndexType di = 16;
+        16;
     #else
-        constexpr IndexType di = 8;
+        8;
     #endif
         uint64_t* b = reinterpret_cast<uint64_t*>(const_cast<BiasType*>(&biases[0]));
         for (IndexType i = 0; i < HalfDimensions * sizeof(BiasType) / sizeof(uint64_t); i += di)
@@ -484,10 +485,8 @@ class FeatureTransformer {
         static_assert(N > 0);
         assert([&]() {
             for (size_t i = 0; i < N; ++i)
-            {
                 if (states_to_update[i] == nullptr)
                     return false;
-            }
             return true;
         }());
 
@@ -540,11 +539,9 @@ class FeatureTransformer {
             auto            columnA  = reinterpret_cast<const vec_t*>(&weights[offsetA]);
 
             if (removed[0].size() == 1)
-            {
                 for (IndexType k = 0; k < HalfDimensions * sizeof(std::int16_t) / sizeof(vec_t);
                      ++k)
                     accOut[k] = vec_add_16(vec_sub_16(accIn[k], columnR0[k]), columnA[k]);
-            }
             else
             {
                 const IndexType offsetR1 = HalfDimensions * removed[0][1];
@@ -709,7 +706,6 @@ class FeatureTransformer {
         FeatureSet::IndexList removed, added;
 
         for (Color c : {WHITE, BLACK})
-        {
             for (PieceType pt = PAWN; pt <= KING; ++pt)
             {
                 const Piece    piece    = make_piece(c, pt);
@@ -729,7 +725,6 @@ class FeatureTransformer {
                     added.push_back(FeatureSet::make_index<Perspective>(sq, piece, ksq));
                 }
             }
-        }
 
         auto& accumulator                 = pos.state()->*accPtr;
         accumulator.computed[Perspective] = true;
@@ -780,9 +775,10 @@ class FeatureTransformer {
             }
 
             for (IndexType k = 0; k < NumRegs; k++)
+            {
                 vec_store(&entryTile[k], acc[k]);
-            for (IndexType k = 0; k < NumRegs; k++)
                 vec_store(&accTile[k], acc[k]);
+            }
         }
 
         for (IndexType j = 0; j < PSQTBuckets / PsqtTileHeight; ++j)
@@ -815,9 +811,10 @@ class FeatureTransformer {
             }
 
             for (std::size_t k = 0; k < NumPsqtRegs; ++k)
+            {
                 vec_store_psqt(&entryTilePsqt[k], psqt[k]);
-            for (std::size_t k = 0; k < NumPsqtRegs; ++k)
                 vec_store_psqt(&accTilePsqt[k], psqt[k]);
+            }
         }
 
 #else

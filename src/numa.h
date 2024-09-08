@@ -153,15 +153,11 @@ inline std::pair<BOOL, std::vector<USHORT>> get_process_group_affinity() {
           GetProcessGroupAffinity(GetCurrentProcess(), &GroupCount, GroupArrayAligned);
 
         if (status == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-        {
             break;
-        }
 
         if (status != 0)
-        {
             return std::make_pair(status,
                                   std::vector(GroupArrayAligned, GroupArrayAligned + GroupCount));
-        }
     }
 
     return std::make_pair(0, std::vector<USHORT>());
@@ -194,9 +190,7 @@ inline WindowsAffinity get_process_affinity() {
         // We expect ERROR_INSUFFICIENT_BUFFER from GetThreadSelectedCpuSetMasks,
         // but other failure is an actual error.
         if (status == 0 && GetLastError() != ERROR_INSUFFICIENT_BUFFER)
-        {
             affinity.isNewDeterminate = false;
-        }
         else if (RequiredMaskCount > 0)
         {
             // If RequiredMaskCount then these affinities were never set, but it's
@@ -207,9 +201,7 @@ inline WindowsAffinity get_process_affinity() {
                                                     RequiredMaskCount, &RequiredMaskCount);
 
             if (status == 0)
-            {
                 affinity.isNewDeterminate = false;
-            }
             else
             {
                 std::set<CpuIndex> cpus;
@@ -219,10 +211,8 @@ inline WindowsAffinity get_process_affinity() {
                     const size_t procGroupIndex = groupAffinities[i].Group;
 
                     for (size_t j = 0; j < WIN_PROCESSOR_GROUP_SIZE; ++j)
-                    {
                         if (groupAffinities[i].Mask & (KAFFINITY(1) << j))
                             cpus.insert(procGroupIndex * WIN_PROCESSOR_GROUP_SIZE + j);
-                    }
                 }
 
                 affinity.newApi = std::move(cpus);
@@ -500,9 +490,7 @@ class NumaConfig {
         // /sys/devices/system/node/online contains information about active NUMA nodes
         auto nodeIdsStr = read_file_to_string("/sys/devices/system/node/online");
         if (!nodeIdsStr.has_value() || nodeIdsStr->empty())
-        {
             fallback();
-        }
         else
         {
             remove_whitespace(*nodeIdsStr);
@@ -524,20 +512,16 @@ class NumaConfig {
                 {
                     remove_whitespace(*cpuIdsStr);
                     for (size_t c : indices_from_shortened_string(*cpuIdsStr))
-                    {
                         if (is_cpu_allowed(c))
                             cfg.add_cpu_to_node(n, c);
-                    }
                 }
             }
         }
 
         if (useFallback)
-        {
             for (CpuIndex c = 0; c < SYSTEM_THREADS_NB; ++c)
                 if (is_cpu_allowed(c))
                     cfg.add_cpu_to_node(NumaIndex{0}, c);
-        }
 
 #elif defined(_WIN64)
 
@@ -556,7 +540,6 @@ class NumaConfig {
 
         WORD numProcGroups = GetActiveProcessorGroupCount();
         for (WORD procGroup = 0; procGroup < numProcGroups; ++procGroup)
-        {
             for (BYTE number = 0; number < WIN_PROCESSOR_GROUP_SIZE; ++number)
             {
                 PROCESSOR_NUMBER procnum;
@@ -570,11 +553,8 @@ class NumaConfig {
                                  + static_cast<CpuIndex>(number);
                 if (status != 0 && nodeNumber != std::numeric_limits<USHORT>::max()
                     && is_cpu_allowed(c))
-                {
                     cfg.add_cpu_to_node(nodeNumber, c);
-                }
             }
-        }
 
         // Split the NUMA nodes to be contained within a group if necessary.
         // This is needed between Windows 10 Build 20348 and Windows 11, because
@@ -657,10 +637,8 @@ class NumaConfig {
             if (!indices.empty())
             {
                 for (auto idx : indices)
-                {
                     if (!cfg.add_cpu_to_node(n, CpuIndex(idx)))
                         std::exit(EXIT_FAILURE);
-                }
 
                 n += 1;
             }
@@ -777,11 +755,9 @@ class NumaConfig {
         std::vector<NumaIndex> ns;
 
         if (nodes.size() == 1)
-        {
             // Special case for when there's no NUMA nodes. This doesn't buy us
             // much, but let's keep the default path simple.
             ns.resize(numThreads, NumaIndex{0});
-        }
         else
         {
             std::vector<size_t> occupation(nodes.size(), 0);
@@ -813,7 +789,7 @@ class NumaConfig {
     }
 
     NumaReplicatedAccessToken bind_current_thread_to_numa_node(NumaIndex n) const {
-        if (n >= nodes.size() || nodes[n].size() == 0)
+        if (n >= nodes.size() || nodes[n].empty())
             std::exit(EXIT_FAILURE);
 
 #if defined(__linux__) && !defined(__ANDROID__)
@@ -1031,9 +1007,7 @@ class NumaConfig {
                 const CpuIndex cfirst = CpuIndex{str_to_size_t(parts[0])};
                 const CpuIndex clast  = CpuIndex{str_to_size_t(parts[1])};
                 for (size_t c = cfirst; c <= clast; ++c)
-                {
                     indices.emplace_back(c);
-                }
             }
         }
 
@@ -1134,13 +1108,9 @@ class NumaReplicated: public NumaReplicatedBase {
 
         const NumaConfig& cfg = get_numa_config();
         if (cfg.requires_memory_replication())
-        {
             for (NumaIndex n = 0; n < cfg.num_numa_nodes(); ++n)
-            {
                 cfg.execute_on_numa_node(
                   n, [this, &source]() { instances.emplace_back(std::make_unique<T>(source)); });
-            }
-        }
         else
         {
             assert(cfg.num_numa_nodes() == 1);

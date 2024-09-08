@@ -114,7 +114,7 @@ Option::Option(const char* v, const char* cur, OnChange f) :
 
 Option::operator int() const {
     assert(type == "check" || type == "spin");
-    return (type == "spin" ? std::stoi(currentValue) : currentValue == "true");
+    return type == "spin" ? std::stoi(currentValue) : currentValue == "true";
 }
 
 Option::operator std::string() const {

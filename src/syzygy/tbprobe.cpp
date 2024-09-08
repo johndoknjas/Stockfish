@@ -350,7 +350,7 @@ template<TBType Type>
 struct TBTable {
     using Ret = std::conditional_t<Type == WDL, WDLScore, int>;
 
-    static constexpr int Sides = Type == WDL ? 2 : 1;
+    static constexpr int Sides = 1 + (Type == WDL);
 
     std::atomic_bool ready;
     void*            baseAddress;
@@ -478,10 +478,8 @@ class TBTables {
     template<TBType Type>
     TBTable<Type>* get(Key key) {
         for (const Entry* entry = &hashTable[uint32_t(key) & (Size - 1)];; ++entry)
-        {
             if (entry->key == key || !entry->get<Type>())
                 return entry->get<Type>();
-        }
     }
 
     void clear() {
@@ -685,17 +683,13 @@ WDLScore map_score(TBTable<WDL>*, File, int value, WDLScore) { return WDLScore(v
 int map_score(TBTable<DTZ>* entry, File f, int value, WDLScore wdl) {
 
     constexpr int WDLMap[] = {1, 3, 0, 2, 0};
-
     auto flags = entry->get(0, f)->flags;
 
-    uint8_t*  map = entry->map;
-    uint16_t* idx = entry->get(0, f)->map_idx;
     if (flags & TBFlag::Mapped)
     {
-        if (flags & TBFlag::Wide)
-            value = ((uint16_t*) map)[idx[WDLMap[wdl + 2]] + value];
-        else
-            value = map[idx[WDLMap[wdl + 2]] + value];
+        uint8_t* map = entry->map;
+        int index = entry->get(0, f)->map_idx[WDLMap[wdl + 2]] + value;
+        value = flags & TBFlag::Wide ? ((uint16_t*) map)[index] : map[index];
     }
 
     // DTZ tables store distance to zero in number of moves or plies. We
@@ -734,20 +728,20 @@ do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* result) 
     uint64_t   idx;
     int        next = 0, size = 0, leadPawnsCnt = 0;
     PairsData* d;
-    Bitboard   b, leadPawns = 0;
+    Bitboard   leadPawns = 0, b;
     File       tbFile = FILE_A;
 
     // A given TB entry like KRK has associated two material keys: KRvk and Kvkr.
     // If both sides have the same pieces keys are equal. In this case TB tables
     // only stores the 'white to move' case, so if the position to lookup has black
     // to move, we need to switch the color and flip the squares before to lookup.
-    bool symmetricBlackToMove = (entry->key == entry->key2 && pos.side_to_move());
+    bool symmetricBlackToMove = entry->key == entry->key2 && pos.side_to_move();
 
     // TB files are calculated for white as the stronger side. For instance, we
     // have KRvK, not KvKR. A position where the stronger side is white will have
     // its material key == entry->key, otherwise we have to switch the color and
     // flip the squares before to lookup.
-    bool blackStronger = (pos.material_key() != entry->key);
+    bool blackStronger = pos.material_key() != entry->key;
 
     int flipColor   = (symmetricBlackToMove || blackStronger) * 8;
     int flipSquares = (symmetricBlackToMove || blackStronger) * 56;
@@ -758,7 +752,6 @@ do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* result) 
     // MapPawns[] value, that is the one most toward the edges and with lowest rank.
     if (entry->hasPawns)
     {
-
         // In all the 4 tables, pawns are at the beginning of the piece sequence and
         // their color is the reference one. So we just pick the first one.
         Piece pc = Piece(entry->get(0, 0)->pieces[0] ^ flipColor);
@@ -840,7 +833,6 @@ do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* result) 
     {
         if (!off_A1H8(squares[i]))
             continue;
-
         if (off_A1H8(squares[i]) > 0)  // A1-H8 diagonal flip: SQ_A3 -> SQ_C1
             for (int j = i; j < size; ++j)
                 squares[j] = Square(((squares[j] >> 3) | (squares[j] << 3)) & 63);
@@ -876,7 +868,6 @@ do_probe_table(const Position& pos, T* entry, WDLScore wdl, ProbeState* result) 
     // together.
     if (entry->hasUniquePieces)
     {
-
         int adjust1 = squares[1] > squares[0];
         int adjust2 = (squares[2] > squares[0]) + (squares[2] > squares[1]);
 
@@ -1130,7 +1121,7 @@ uint8_t* set_dtz_map(TBTable<DTZ>& e, uint8_t* data, File maxFile) {
         }
     }
 
-    return data += uintptr_t(data) & 1;  // Word alignment
+    return data + (uintptr_t(data) & 1);  // Word alignment
 }
 
 // Populate entry's PairsData records with data from the just memory-mapped file.
@@ -1159,7 +1150,6 @@ void set(T& e, uint8_t* data) {
 
     for (File f = FILE_A; f <= maxFile; ++f)
     {
-
         for (int i = 0; i < sides; i++)
             *e.get(i, f) = PairsData();
 
@@ -1328,7 +1318,6 @@ WDLScore search(Position& pos, ProbeState* result) {
     // DTZ stores a "don't care" value if bestValue is a win
     if (bestValue >= value)
         return *result = (bestValue > WDLDraw || noMoreMoves ? ZEROING_BEST_MOVE : OK), bestValue;
-
     return *result = OK, value;
 }
 
@@ -1359,7 +1348,6 @@ void Tablebases::init(const std::string& paths) {
     for (Square s = SQ_A1; s <= SQ_D4; ++s)
         if (off_A1H8(s) < 0 && file_of(s) <= FILE_D)
             MapA1D1D4[s] = code++;
-
         else if (!off_A1H8(s) && file_of(s) <= FILE_D)
             diagonal.push_back(s);
 
@@ -1379,13 +1367,10 @@ void Tablebases::init(const std::string& paths) {
                 for (Square s2 = SQ_A1; s2 <= SQ_H8; ++s2)
                     if ((PseudoAttacks[KING][s1] | s1) & s2)
                         continue;  // Illegal position
-
                     else if (!off_A1H8(s1) && off_A1H8(s2) > 0)
                         continue;  // First on diagonal, second above
-
                     else if (!off_A1H8(s1) && !off_A1H8(s2))
                         bothOnDiagonal.emplace_back(idx, s2);
-
                     else
                         MapKK[idx][s2] = code++;
             }
@@ -1606,7 +1591,7 @@ bool Tablebases::root_probe(Position&          pos,
     // Check whether a position was repeated since the last zeroing move.
     bool rep = pos.has_repeated();
 
-    int dtz, bound = rule50 ? (MAX_DTZ / 2 - 100) : 1;
+    int dtz, bound = rule50 ? MAX_DTZ / 2 - 100 : 1;
 
     // Probe and rank each move
     for (auto& m : rootMoves)
@@ -1656,10 +1641,10 @@ bool Tablebases::root_probe(Position&          pos,
         // 1 cp to cursed wins and let it grow to 49 cp as the positions gets
         // closer to a real win.
         m.tbScore = r >= bound ? VALUE_MATE - MAX_PLY - 1
-                  : r > 0  ? Value((std::max(3, r - (MAX_DTZ / 2 - 200)) * int(PawnValue)) / 200)
+                  : r > 0  ? Value((std::max(3, r - (MAX_DTZ / 2 - 200)) * PawnValue) / 200)
                   : r == 0 ? VALUE_DRAW
                   : r > -bound
-                    ? Value((std::min(-3, r + (MAX_DTZ / 2 - 200)) * int(PawnValue)) / 200)
+                    ? Value((std::min(-3, r + (MAX_DTZ / 2 - 200)) * PawnValue) / 200)
                     : -VALUE_MATE + MAX_PLY + 1;
     }
 
@@ -1685,10 +1670,7 @@ bool Tablebases::root_probe_wdl(Position& pos, Search::RootMoves& rootMoves, boo
     {
         pos.do_move(m.pv[0], st);
 
-        if (pos.is_draw(1))
-            wdl = WDLDraw;
-        else
-            wdl = -probe_wdl(pos, &result);
+        wdl = pos.is_draw(1) ? WDLDraw : -probe_wdl(pos, &result);
 
         pos.undo_move(m.pv[0]);
 
@@ -1754,11 +1736,9 @@ Config Tablebases::rank_root_moves(const OptionsMap&  options,
             config.cardinality = 0;
     }
     else
-    {
         // Clean up if root_probe() and root_probe_wdl() have failed
         for (auto& m : rootMoves)
             m.tbRank = 0;
-    }
 
     return config;
 }
