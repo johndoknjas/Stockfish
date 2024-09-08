@@ -52,9 +52,7 @@ size_t str_to_size_t(const std::string& s);
 struct PipeDeleter {
     void operator()(FILE* file) const {
         if (file != nullptr)
-        {
             pclose(file);
-        }
     }
 };
 

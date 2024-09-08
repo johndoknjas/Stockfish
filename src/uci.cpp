@@ -51,12 +51,8 @@ overload(Ts...) -> overload<Ts...>;
 void UCIEngine::print_info_string(const std::string& str) {
     sync_cout_start();
     for (auto& line : split(str, "\n"))
-    {
         if (!is_whitespace(line))
-        {
             std::cout << "info string " << line << '\n';
-        }
-    }
     sync_cout_end();
 }
 
@@ -177,7 +173,6 @@ Search::LimitsType UCIEngine::parse_limits(std::istream& is) {
         if (token == "searchmoves")  // Needs to be the last command on the line
             while (is >> token)
                 limits.searchmoves.push_back(to_lower(token));
-
         else if (token == "wtime")
             is >> limits.time[WHITE];
         else if (token == "btime")
@@ -316,9 +311,7 @@ void UCIEngine::position(std::istringstream& is) {
     std::vector<std::string> moves;
 
     while (is >> token)
-    {
         moves.push_back(token);
-    }
 
     engine.set_position(fen, moves);
 }
@@ -355,7 +348,7 @@ int win_rate_model(Value v, const Position& pos) {
     auto [a, b] = win_rate_params(pos);
 
     // Return the win rate in per mille units, rounded to the nearest integer.
-    return int(0.5 + 1000 / (1 + std::exp((a - double(v)) / b)));
+    return std::round(1000 / (1 + std::exp((a - double(v)) / b)));
 }
 }
 
@@ -387,7 +380,7 @@ int UCIEngine::to_cp(Value v, const Position& pos) {
 
     auto [a, b] = win_rate_params(pos);
 
-    return std::round(100 * int(v) / a);
+    return std::round(100 * v / a);
 }
 
 std::string UCIEngine::wdl(Value v, const Position& pos) {

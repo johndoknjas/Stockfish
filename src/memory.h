@@ -70,7 +70,7 @@ void memory_deleter_array(T* ptr, FREE_FUNC free_func) {
         const size_t size = *reinterpret_cast<size_t*>(raw_memory);
 
         // Explicitly call the destructor for each element in reverse order
-        for (size_t i = size; i-- > 0;)
+        for (size_t i = size - 1; i >= 0; --i)
             ptr[i].~T();
     }
 

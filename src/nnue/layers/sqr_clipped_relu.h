@@ -83,7 +83,6 @@ class SqrClippedReLU {
             _mm_store_si128(&out[i], _mm_packs_epi16(words0, words1));
         }
         constexpr IndexType Start = NumChunks * 16;
-
 #else
         constexpr IndexType Start = 0;
 #endif
